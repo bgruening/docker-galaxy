@@ -592,23 +592,23 @@ In this example configuration the cluster file system has a directory `/cluster_
 
 The container should be started with the following settings configured:
 ```bash
-docker run -d -p 8080:80 -p 8021:21 \
--v /cluster_storage/galaxy_data/galaxy_export:/export \ # This makes sure all galaxy files are on the cluster filesystem
--v /cluster_storage/galaxy_data:/cluster_storage/galaxy_data \ # This ensures the links within the docker container and on the cluster fs are the same
+docker run -d -p 8080:80 -p 8021:21
+-v /cluster_storage/galaxy_data/galaxy_export:/export # This makes sure all galaxy files are on the cluster filesystem
+-v /cluster_storage/galaxy_data:/cluster_storage/galaxy_data # This ensures the links within the docker container and on the cluster fs are the same
 # The following settings make sure that each job is configured with the paths on the cluster fs instead of /export
--e GALAXY_CONFIG_TOOL_DEPENDENCY_DIR="/cluster_storage/galaxy_data/galaxy_export/tool_deps" \
--e GALAXY_CONFIG_TOOL_DEPENDENCY_CACHE_DIR="/cluster_storage/galaxy_data/galaxy_export/tool_deps/_cache" \
--e GALAXY_CONFIG_FILE_PATH="/cluster_storage/galaxy_data/galaxy_export/galaxy/database/files" \
--e GALAXY_CONFIG_TOOL_PATH="/cluster_storage/galaxy_data/galaxy_export/galaxy/tools" \
--e GALAXY_CONFIG_TOOL_DATA_PATH="/cluster_storage/galaxy_data/galaxy_export/galaxy/tool-data" \
--e GALAXY_CONFIG_SHED_TOOL_DATA_PATH="/cluster_storage/galaxy_data/galaxy_export/galaxy/tool-data" \
+-e GALAXY_CONFIG_TOOL_DEPENDENCY_DIR="/cluster_storage/galaxy_data/galaxy_export/tool_deps"
+-e GALAXY_CONFIG_TOOL_DEPENDENCY_CACHE_DIR="/cluster_storage/galaxy_data/galaxy_export/tool_deps/_cache"
+-e GALAXY_CONFIG_FILE_PATH="/cluster_storage/galaxy_data/galaxy_export/galaxy/database/files"
+-e GALAXY_CONFIG_TOOL_PATH="/cluster_storage/galaxy_data/galaxy_export/galaxy/tools"
+-e GALAXY_CONFIG_TOOL_DATA_PATH="/cluster_storage/galaxy_data/galaxy_export/galaxy/tool-data"
+-e GALAXY_CONFIG_SHED_TOOL_DATA_PATH="/cluster_storage/galaxy_data/galaxy_export/galaxy/tool-data"
 # The following settings are for directories that can be anywhere on the cluster fs.
--e GALAXY_CONFIG_JOB_WORKING_DIRECTORY="/cluster_storage/galaxy_data/galaxy_export/galaxy/database/job_working_directory" \ #IMPORTANT: needs to be created manually. Can also be placed elsewhere, but is originally located here
--e GALAXY_CONFIG_NEW_FILE_PATH="/cluster_storage/galaxy_data/tmp" \ # IMPORTANT: needs to be created manually. This needs to be writable by UID=1450 and have its flippy bit set (chmod 1777 for world-writable with flippy bit)
--e GALAXY_CONFIG_OUTPUTS_TO_WORKING_DIRECTORY=False \ # Writes Job scripts, stdout and stderr to job_working_directory.   
--e GALAXY_CONFIG_RETRY_JOB_OUTPUT_COLLECTION=5 \ #IF your cluster fs uses nfs this may introduce latency. You can set galaxy to retry if a job output is not yet created.
+-e GALAXY_CONFIG_JOB_WORKING_DIRECTORY="/cluster_storage/galaxy_data/galaxy_export/galaxy/database/job_working_directory" #IMPORTANT: needs to be created manually. Can also be placed elsewhere, but is originally located here
+-e GALAXY_CONFIG_NEW_FILE_PATH="/cluster_storage/galaxy_data/tmp" # IMPORTANT: needs to be created manually. This needs to be writable by UID=1450 and have its flippy bit set (chmod 1777 for world-writable with flippy bit)
+-e GALAXY_CONFIG_OUTPUTS_TO_WORKING_DIRECTORY=False # Writes Job scripts, stdout and stderr to job_working_directory.
+-e GALAXY_CONFIG_RETRY_JOB_OUTPUT_COLLECTION=5 #IF your cluster fs uses nfs this may introduce latency. You can set galaxy to retry if a job output is not yet created.
 # Conda settings. IMPORTANT!
--e GALAXY_CONFIG_CONDA_PREFIX="/cluster_storage/galaxy_data/_conda" \ # Can be anywhere EXCEPT cluster_storage/galaxy/galaxy_export!
+-e GALAXY_CONFIG_CONDA_PREFIX="/cluster_storage/galaxy_data/_conda" # Can be anywhere EXCEPT cluster_storage/galaxy/galaxy_export!
 # Conda uses $PWD to determine where the virtual environment is. If placed inside the export directory conda will determine $PWD to be a subirectory of the  /export folder which does not exist on the cluster!
 -e GALAXY_CONFIG_CONDA_AUTO_INIT=True # When the necessary environment can not be found a new one will automatically be created
 ```
