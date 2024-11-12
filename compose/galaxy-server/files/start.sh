@@ -3,7 +3,7 @@
 create_user() {
   GALAXY_PROXY_PREFIX=$(cat $GALAXY_CONFIG_DIR/GALAXY_PROXY_PREFIX.txt)
   echo "Waiting for Galaxy..."
-  until [ "$(curl -s -o /dev/null -w '%{http_code}' ${GALAXY_URL:-nginx}$GALAXY_PROXY_PREFIX)" -eq "200" ] && echo Galaxy started; do
+  until [ "$(curl -L -s -o /dev/null -w '%{http_code}' ${GALAXY_URL:-nginx}$GALAXY_PROXY_PREFIX)" -eq "200" ] && echo Galaxy started; do
     sleep 0.1;
   done;
   echo "Creating admin user $GALAXY_DEFAULT_ADMIN_USER with key $GALAXY_DEFAULT_ADMIN_KEY and password $GALAXY_DEFAULT_ADMIN_PASSWORD if not existing"
@@ -80,9 +80,9 @@ fi
 if $PRIVILEGED; then
   echo "Mounting CVMFS"
   chmod 666 /dev/fuse
-  mkdir /cvmfs/data.galaxyproject.org
+  if [ ! -d /cvmfs/data.galaxyproject.org ] ; then mkdir /cvmfs/data.galaxyproject.org ; fi
   mount -t cvmfs data.galaxyproject.org /cvmfs/data.galaxyproject.org
-  mkdir /cvmfs/singularity.galaxyproject.org
+  if [ ! -d /cvmfs/singularity.galaxyproject.org ] ; then mkdir /cvmfs/singularity.galaxyproject.org ; fi
   mount -t cvmfs singularity.galaxyproject.org /cvmfs/singularity.galaxyproject.org
 fi
 
@@ -130,4 +130,4 @@ chown -RL "$GALAXY_USER:$GALAXY_GROUP" "$GALAXY_CONFIG_DIR"
 
 echo "Starting Galaxy now.."
 cd "$GALAXY_ROOT" || { echo "Error: Could not change to $GALAXY_ROOT"; exit 1; }
-"$GALAXY_VIRTUAL_ENV/bin/uwsgi" --yaml "$GALAXY_CONFIG_DIR/galaxy.yml" --uid "$GALAXY_UID" --gid "$GALAXY_GID"
+HOME=/home/galaxy "$GALAXY_VIRTUAL_ENV/bin/uwsgi" --yaml "$GALAXY_CONFIG_DIR/galaxy.yml" --uid "$GALAXY_UID" --gid "$GALAXY_GID"

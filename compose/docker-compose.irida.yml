@@ -1,0 +1,55 @@
+# Install IRIDA
+version: "3.7"
+services:
+  galaxy-server:
+    environment:
+      - GALAXY_EXTRA_GROUP=root
+      - GALAXY_URL=http://nginx:90/
+    volumes:
+      - irida_web_data:/data/irida
+  galaxy-configurator:
+    environment:
+      - GALAXY_SINGULARITY_VOLUMES=/data/irida:rw
+      - GALAXY_CONFIG_ALLOW_PATH_PASTE=true
+      - IRIDA_OVERWRITE_CONFIG=true
+      - IRIDA_CONF_DIR=/etc/irida
+      - IRIDA_ENABLED=true
+    volumes:
+      - ${EXPORT_DIR:-./export}/irida:/etc/irida
+  nginx:
+    ports:
+      - 90:90
+  irida-web:
+    build: irida
+    container_name: irida-web
+    depends_on:
+      - irida-mysql
+    ports:
+      - "8080:8080"
+    volumes:
+      - ${EXPORT_DIR:-./export}/irida:/etc/irida
+      - irida_web_data:/data/irida
+    networks:
+      - galaxy
+
+  irida-mysql:
+    restart: always
+    image: mariadb:10.5.6
+    container_name: irida-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpasswd
+      MYSQL_DATABASE: irida_db
+      MYSQL_USER: irida_user
+      MYSQL_PASSWORD: irida_passwd
+    volumes:
+      - irida_mysql_data:/var/lib/mysql
+    ports:
+      - "33060:3306"   
+    networks:
+      - galaxy
+
+volumes:
+  irida_mysql_data:
+  irida_web_data:
+  irida_galaxy_data:      
+

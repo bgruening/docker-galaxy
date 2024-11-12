@@ -1,0 +1,8 @@
+
+data_managers:
+  - id: toolshed.g2.bx.psu.edu/repos/iuc/data_manager_primer_scheme_bedfiles/data_manager_primer_scheme_bedfiles/0.0.13
+    params: 
+      - 'input_type': 'network'
+      - 'primers': 'SARS-CoV-2-ARTICv1,SARS-CoV-2-ARTICv2,SARS-CoV-2-ARTICv3,SARS-CoV-2-ARTICv4,VarSkip-V1a,Midnight-v1'
+    data_table_reload:
+      - 'primer_scheme_bedfiles'

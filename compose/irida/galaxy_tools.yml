@@ -1,0 +1,82 @@
+install_repository_dependencies: true
+install_resolver_dependencies: true
+install_tool_dependencies: true
+tools:
+- name: ivar_variants
+  owner: iuc
+  revisions:
+  - 3888bbe7a9ca
+  tool_panel_section_label: Tools from workflows
+  tool_shed_url: https://toolshed.g2.bx.psu.edu/
+- name: multiqc
+  owner: iuc
+  revisions:
+  - 75c93c70d094
+  tool_panel_section_label: Tools from workflows
+  tool_shed_url: https://toolshed.g2.bx.psu.edu/
+- name: bwa
+  owner: devteam
+  revisions:
+  - 64f11cf59c6e
+  tool_panel_section_label: Tools from workflows
+  tool_shed_url: https://toolshed.g2.bx.psu.edu/
+- name: qualimap_bamqc
+  owner: iuc
+  revisions:
+  - e7fd6754d093
+  tool_panel_section_label: Tools from workflows
+  tool_shed_url: https://toolshed.g2.bx.psu.edu/
+- name: pangolin
+  owner: iuc
+  revisions:
+  - debfccc4d65b
+  tool_panel_section_label: Tools from workflows
+  tool_shed_url: https://toolshed.g2.bx.psu.edu/
+- name: nextclade
+  owner: iuc
+  revisions:
+  - b74b9a7b3e3b
+  tool_panel_section_label: Tools from workflows
+  tool_shed_url: https://toolshed.g2.bx.psu.edu/
+- name: ivar_trim
+  owner: iuc
+  revisions:
+  - c092052ed673
+  tool_panel_section_label: Tools from workflows
+  tool_shed_url: https://toolshed.g2.bx.psu.edu/
+- name: picard
+  owner: devteam
+  revisions:
+  - 7d34178f2812
+  tool_panel_section_label: Tools from workflows
+  tool_shed_url: https://toolshed.g2.bx.psu.edu/
+- name: qc
+  owner: sanbi-uwc
+  revisions:
+  - 6bdec8c62aec
+  tool_panel_section_label: Tools from workflows
+  tool_shed_url: https://testtoolshed.g2.bx.psu.edu/
+- name: text_processing
+  owner: bgruening
+  revisions:
+  - 9ff72e942410
+  tool_panel_section_label: Tools from workflows
+  tool_shed_url: https://toolshed.g2.bx.psu.edu/
+- name: samtools_view
+  owner: iuc
+  revisions:
+  - b72793637686
+  tool_panel_section_label: Tools from workflows
+  tool_shed_url: https://toolshed.g2.bx.psu.edu/
+- name: fastp
+  owner: iuc
+  revisions:
+  - dbf9c561ef29
+  tool_panel_section_label: Tools from workflows
+  tool_shed_url: https://toolshed.g2.bx.psu.edu/
+- name: ivar_consensus
+  owner: iuc
+  revisions:
+  - 731182d54f78
+  tool_panel_section_label: Tools from workflows
+  tool_shed_url: https://toolshed.g2.bx.psu.edu/

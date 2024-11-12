@@ -12,7 +12,7 @@ RUN apt update && apt install --no-install-recommends cryptsetup-bin uuid-dev -y
 
 ENV PATH=/usr/local/go/bin:${PATH}
 ENV SINGULARITY_VERSION=3.5.3
-RUN wget https://github.com/sylabs/singularity/releases/download/v${SINGULARITY_VERSION}/singularity-${SINGULARITY_VERSION}.tar.gz \
+RUN wget https://github.com/singularityware/singularity/releases/download/v${SINGULARITY_VERSION}/singularity-${SINGULARITY_VERSION}.tar.gz \
     && tar -xzf singularity-${SINGULARITY_VERSION}.tar.gz \
     && cd singularity \
     && ./mconfig \

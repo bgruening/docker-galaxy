@@ -30,6 +30,7 @@ services:
     environment:
       - EXPORT_DIR=${EXPORT_DIR:-./export}
       - HOST_PWD=$PWD
+      - GALAXY_CONF_DIR=/galaxy/config
       - GALAXY_OVERWRITE_CONFIG=true
       - GALAXY_DEPENDENCY_RESOLUTION=conda
       - GALAXY_JOB_RUNNER=local
@@ -40,6 +41,7 @@ services:
       - GALAXY_CONFIG_AMQP_INTERNAL_CONNECTION=amqp://galaxy:vaiJa3ieghai2ief0jao@rabbitmq/galaxy
       - GALAXY_PROXY_PREFIX=${GALAXY_PROXY_PREFIX:-}
       - GALAXY_CONFIG_CLEANUP_JOB=onsuccess
+      - GALAXY_ENABLE_TESTTOOLSHED=true
       - NGINX_OVERWRITE_CONFIG=true
     volumes:
       - ${EXPORT_DIR:-./export}/galaxy/config:/galaxy/config
@@ -89,3 +91,6 @@ services:
       - galaxy
 networks:
   galaxy:
+    driver: bridge
+    driver_opts:
+      com.docker.network.driver.mtu: 1450

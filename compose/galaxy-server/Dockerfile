@@ -50,7 +50,7 @@ RUN curl -s -L "https://repo.anaconda.com/miniconda/Miniconda3-${MINICONDA_VERSI
 
 FROM build_base as build_galaxy
 
-ARG GALAXY_RELEASE=release_20.09
+ARG GALAXY_RELEASE=release_21.01
 ARG GALAXY_REPO=https://github.com/galaxyproject/galaxy
 
 COPY ./files/common_cleanup.sh /usr/bin/common_cleanup.sh
@@ -83,7 +83,7 @@ ENV EXPORT_DIR=/export \
     GALAXY_PYTHON=/usr/bin/python3 \
     HTCONDOR_ROOT=/opt/htcondor
 
-ENV GALAXY_RELEASE=${GALAXY_RELEASE:-release_20.09} \
+ENV GALAXY_RELEASE=${GALAXY_RELEASE:-release_21.01} \
     GALAXY_REPO=${GALAXY_REPO:-https://github.com/galaxyproject/galaxy} \
     GALAXY_STATIC_DIR=$GALAXY_ROOT/static \
     GALAXY_EXPORT=$EXPORT_DIR/galaxy \
@@ -129,6 +129,10 @@ COPY --chown=$GALAXY_USER:$GALAXY_USER --from=build_miniconda ${GALAXY_HOME} ${G
 COPY --chown=$GALAXY_USER:$GALAXY_USER --from=build_miniconda /etc/profile.d/conda.sh /etc/profile.d/conda.sh
 
 COPY ./files/start.sh /usr/bin/start.sh
+
+RUN usermod -aG root $GALAXY_USER
+
+#RUN if [ -n "$GALAXY_EXTRA_GROUP" ] ; then usermod -a -G $GALAXY_EXTRA_GROUP $GALAXY_USER ; fi
 
 EXPOSE 80
 

@@ -36,7 +36,7 @@
               <env id="HOME">/home/galaxy</env>
               <param id="singularity_enabled">true</param>
               {% if GALAXY_JOB_RUNNER == 'local' -%}
-                <param id="singularity_volumes">{{ EXPORT_DIR | regex_replace("^.", "") }}/$galaxy_root:$galaxy_root:ro,{{ EXPORT_DIR | regex_replace("^.", "") }}/$tool_directory:$tool_directory:ro,{{ EXPORT_DIR | regex_replace("^.", "") }}/$job_directory:$job_directory:rw,{{ EXPORT_DIR | regex_replace("^.", "") }}/$working_directory:$working_directory:rw,{{ EXPORT_DIR | regex_replace("^.", "") }}/$default_file_path:$default_file_path:rw</param>
+                <param id="singularity_volumes">{{ EXPORT_DIR | regex_replace("^.", "") }}/$galaxy_root:$galaxy_root:ro,{{ EXPORT_DIR | regex_replace("^.", "") }}/$tool_directory:$tool_directory:ro,{{ EXPORT_DIR | regex_replace("^.", "") }}/$job_directory:$job_directory:rw,{{ EXPORT_DIR | regex_replace("^.", "") }}/$working_directory:$working_directory:rw{%if GALAXY_SINGULARITY_VOLUMES is defined-%},{{GALAXY_SINGULARITY_VOLUMES}}{%endif-%},{{ EXPORT_DIR | regex_replace("^.", "") }}/$default_file_path:$default_file_path:rw</param>
               {% endif -%}
             {% elif GALAXY_DEPENDENCY_RESOLUTION == 'docker' -%}
               <param id="docker_enabled">true</param>

@@ -1,0 +1,145 @@
+##### The filesystem location where files managed by irida are stored. The platform
+##### will *NOT* automatically make this directory, so it must exist before you
+##### start any instance of the platform.
+
+sequence.file.base.directory=/data/irida/sequence
+reference.file.base.directory=/data/irida/reference
+output.file.base.directory=/data/irida/output
+assembly.file.base.directory=/data/irida/assembly
+
+# production / master directory store 
+
+#sequence.file.base.directory=/cip0/software/galaxy/cbtgalaxydev/cbtgx/irida/data/irida/sequence
+#reference.file.base.directory=/cip0/software/galaxy/cbtgalaxydev/cbtgx/irida/data/irida/reference
+#output.file.base.directory=/cip0/software/galaxy/cbtgalaxydev/cbtgx/irida/data/irida/output
+
+##### Set the max upload size (in bytes). If left unconfigured, the max upload
+##### size is unlimited (or limited by the container hosting IRIDA).
+# file.upload.max_size=
+
+##### Set number of threads for FASTQC and file post-processsing.  The max size
+##### should not be more than the number of jdbc threads.
+file.processing.core.size=4
+file.processing.max.size=8
+file.processing.queue.capacity=512
+
+
+# don't decompress compressed data
+file.processing.decompress=false
+
+##### The database-specific settings. Several examples of how to specify a
+##### Hibernate driver are listed below (but commented out).
+
+## MySQL (or MariaDB)
+jdbc.driver=com.mysql.jdbc.Driver
+hibernate.dialect=org.hibernate.dialect.MySQL55Dialect
+
+## Database location (you may need to use a different string for different
+## database vendors).
+jdbc.url=jdbc:mysql://irida-mysql:3306/irida_db?allowPublicKeyRetrieval=true&useSSL=false
+
+## Connection settings:
+jdbc.username=irida_user
+jdbc.password=irida_passwd
+
+## Configuring Liquibase to execute a schema update. Should only make changes to
+## the database when executing the first time, or when upgrading.
+liquibase.update.database.schema=true
+
+## Configure Hibernate to execute a schema construction. WARNING: do not use this
+## at the same time as the Liquibase schema update. Liquibase will *not* execute
+## if this value is set, warnings will be produced in the log. These settings should
+## only be used in a development environment (**not** production).
+hibernate.hbm2ddl.auto=
+hibernate.hbm2ddl.import_files=
+
+## Configure Hibernate to show SQL in the log file. You *probably* don't want
+## to enable this, but could be useful for debugging.
+hibernate.show_sql=false
+
+## Connection Pool settings:
+jdbc.pool.initialSize=10
+jdbc.pool.maxActive=20
+jdbc.pool.testOnBorrow=true
+jdbc.pool.testOnReturn=true
+jdbc.pool.testWhileIdle=true
+
+## Configure the JDBC library to use this query to verify that a managed
+## connection is still valid. This may need to change, depending on your database vendor.
+jdbc.pool.validationQuery=select 1
+
+jdbc.pool.maxWait=10000
+jdbc.pool.removeAbandoned=true
+jdbc.pool.logAbandoned=true
+jdbc.pool.removeAbandonedTimeout=60
+jdbc.pool.maxIdle=10
+
+###############################################################################
+# Execution Manager configuration Galaxy. This is how IRIDA should connect to #
+# the internally managed instance of Galaxy for executing workflows.          #
+###############################################################################
+
+# The URL for the Galaxy execution manager
+# Networked service-to-service communication use the CONTAINER_PORT
+galaxy.execution.url=http://nginx:90/
+
+# The API key of an account to run workflows in Galaxy.
+# This does not have to be an administrator account.
+galaxy.execution.apiKey=fakekey
+
+# The email address of an account to run workflows in Galaxy
+galaxy.execution.email=admin@galaxy.org
+
+# The data storage method for uploading data into a Galaxy execution manager.
+galaxy.execution.dataStorage=local
+
+##################################
+# Workflow configuration options #
+##################################
+
+# The timeout (in seconds) for uploading files to Galaxy for execution
+# Increase this value if uploading files to Galaxy is timing out.
+galaxy.library.upload.timeout=10800
+
+# The polling time (in seconds) for checking if files have been uploaded to Galaxy
+# This value should not be greater than $galaxy.library.upload.timeout
+#galaxy.library.upload.polling.time=5
+
+# Number of threads used to wait for completion of uploading files.
+#galaxy.library.upload.threads=1
+
+# Maximum number of workflows IRIDA will schedule to run at the same time
+irida.workflow.max-running=4
+
+##################################
+# Analysis configuration options #
+##################################
+
+# The number days before intermediate files for an analysis get cleaned up.
+# That is, the number of days before files in Galaxy get deleted for the analysis.
+# Leave commented out for no cleanup.
+# This value can be fractional representing a fraction of a day (e.g. 0.5 for half a day).
+#irida.analysis.cleanup.days=
+
+#################################
+# Scheduled Task  configuration #
+#################################
+#Cron string for how often the email subscriptions are sent out.
+#Format: sec min hrs dom mon dow
+irida.scheduled.subscription.cron=0 0 0 * * *
+irida.scheduled.threads=2
+
+#################################
+# NCBI SRA Export configuration #
+#################################
+#Host to upload ncbi exports
+ncbi.upload.host=localhost
+#FTP Username and password for bulk SRA uploads
+ncbi.upload.user=test
+ncbi.upload.password=password
+#base directory in which to create SRA submissions
+ncbi.upload.baseDirectory=tmp
+#port for ftp upload
+ncbi.upload.port=21
+#Default namespace to preface file identifiers
+ncbi.upload.namespace=IRIDA

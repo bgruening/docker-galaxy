@@ -956,3 +956,58 @@ You can file an [github issue](https://github.com/bgruening/docker-galaxy-stable
 us on the [Galaxy development list](http://lists.bx.psu.edu/listinfo/galaxy-dev).
 
 If you like this service please fill out this survey: https://www.surveymonkey.de/r/denbi-service?sc=rbc&tool=galaxy-docker
+
+### SANBI / COMBAT-SARS-CoV-2 specific notes
+
+#### Tool installation
+
+IRIDA plugins built with the [IRIDA plugin builder](https://github.com/COMBAT-TB/irida-plugin-builder) have a `tools.yaml`
+file in the same folder as their workflows (the `irida_workflow.xml` etc). This can be used, with [ephemeris](https://ephemeris.readthedocs.io/en/latest/) to install tools into Galaxy. Note while this will list tools for each workflow, it
+does not have info on data managers and those need to be listed and installed separately.
+
+#### Running Data Managers
+
+As admin you need to run the Data Manager for Galaxy manually. Connect to Galaxy on port 90 of the machine where IRIDA is
+installed and use the Admin menu (Local Data) to find and run the DM.
+
+#### Singularity images
+
+Singularity container images are managed through the [Container Resolvers](https://github.com/galaxyproject/galaxy/blob/dev/lib/galaxy/config/sample/container_resolvers_conf.xml.sample) dependency resolvers. There are 3 approaches: 
+
+1. Explictely mentioned containers (these are mentioned in the tool XML)
+2. Mulled containers available on quay.io
+3. Containers build on the server
+
+Both (2) and (3) are designed to cache the containers on the server after download or building them. Neither approach works with docker-ized Galaxy at this stage. The cache is located, by default at `database/container_cache/singularity/mulled` in the `export/galaxy` directory. Pre-built images for the Oxford Nanopore pipeline can be fetched with this script:
+
+```
+#!/bin/bash
+
+set -e
+
+DEST=$(readlink -f $1)
+
+mkdir tmp
+cd tmp
+
+wget -R "index.html*" --no-host-directories --recursive --no-parent https://gdev.sanbi.ac.za/static/singularity_images/
+
+mv static/singularity_images/* $DEST
+
+cd ..
+rm -rf tmp
+```
+
+This downloads images and puts them in the directory specified - e.g. if this script is saved as `fetch_images.sh` it can be run as `fetch_images.sh dest` and it will put the images in a `dest` directory (this needs to exist before the script is run).
+
+#### Ensure that conda is not used
+
+Put this:
+
+```
+<dependency_resolvers>
+</dependency_resolvers>
+```
+
+in `galaxy-configurator/templates/galaxy/dependency_resolvers_conf.xml` to ensure that conda is not used for dependency
+resolution.

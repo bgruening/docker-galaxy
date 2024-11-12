@@ -19,14 +19,69 @@ http {
   # maximum file upload size
   client_max_body_size 10g;
 
+  {% if IRIDA_ENABLED | default %}
+  {% if IRIDA_SSL_ENABLED | default %}
+  # this is for IRIDA
+
   server {
     listen 80 default_server;
     listen [::]:80 default_server;
+
+    server_name _;
+
+    location / {
+        return 302 https://$host$request_uri;
+    }
+  }
+  {% endif %}
+
+  server {
+    server_name _;
+    {% if IRIDA_SSL_ENABLED | default %}
+    listen        *:443 ssl default_server;
+
+    # Allowable SSL protocols
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    # Use secure ciphers
+    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA:ECDHE-ECDSA-AES128-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES256-SHA256;
+    ssl_dhparam /etc/nginx/dhparams.pem;
+    ssl_prefer_server_ciphers on;
+
+    # Enable session reuse
+    ssl_session_cache shared:SSL:8m;
+    ssl_session_timeout 5m;
+
+    # Cert/Key
+    ssl_certificate /etc/nginx/fullchain.pem;
+    ssl_certificate_key /etc/nginx/privkey.pem;
+    {% else %}
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    {% endif %}
+
+    proxy_read_timeout 600;
+    proxy_connect_timeout 600;
+    proxy_send_timeout 600; 
+
+    location / {
+          proxy_set_header X-Forwarded-Host $host;
+          proxy_set_header X-Forwarded-Server $host;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_pass http://irida-web:8080;
+    }    
+  }
+  {% endif %}
+
+  server {
+    listen {%if IRIDA_ENABLED %} 90 {% else %} 80 {% endif %} default_server;
+    listen [::]:{%if IRIDA_ENABLED %}90{% else %}80{% endif %} default_server;
     server_name _;
 
     # use a variable for convenience
     set $galaxy_static /export/galaxy/static;
     set $galaxy_root /export/galaxy;
+
 
     # proxy all requests not matching other locations to uWSGI
     location /{{ GALAXY_PROXY_PREFIX | regex_replace("^/", "") | regex_replace("/$", "") }} {

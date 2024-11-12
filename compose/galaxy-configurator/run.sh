@@ -6,10 +6,11 @@ export GALAXY_CONF_DIR=${GALAXY_CONF_DIR:-/galaxy/config} \
        SLURM_CONF_DIR=${SLURM_CONF_DIR:-/etc/slurm-llnl} \
        HTCONDOR_CONF_DIR=${HTCONDOR_CONF_DIR:-/htcondor} \
        PULSAR_CONF_DIR=${PULSAR_CONF_DIR:-/pulsar/config} \
-       KIND_CONF_DIR=${KIND_CONF_DIR:-/kind}
+       KIND_CONF_DIR=${KIND_CONF_DIR:-/kind} \
+       IRIDA_CONF_DIR=${IRIDA_CONF_DIR:-/etc/irida}
 
 echo "Locking all configurations"
-locks=("$GALAXY_CONF_DIR" "$SLURM_CONF_DIR" "$HTCONDOR_CONF_DIR" "$PULSAR_CONF_DIR" "$KIND_CONF_DIR")
+locks=("$GALAXY_CONF_DIR" "$SLURM_CONF_DIR" "$HTCONDOR_CONF_DIR" "$PULSAR_CONF_DIR" "$KIND_CONF_DIR" "$IRIDA_CONF_DIR")
 for lock in "${locks[@]}"; do
   echo "Locking $lock"
   touch "${lock}/configurator.lock"
@@ -111,6 +112,25 @@ else
   chmod a+r "${GALAXY_KUBECONFIG:-${KIND_CONF_DIR}/.kube/config_in_docker}"
 fi
 
+# IRIDA configuration
+if [ "$IRIDA_OVERWRITE_CONFIG" != "true" ]; then
+  echo "IRIDA_OVERWRITE_CONFIG is not true. Skipping configuration of IRIDA"
+else
+  irida_configs=( "irida.conf" "web.conf" "static" "templates" "plugins" )
+
+  for conf in "${irida_configs[@]}"; do
+    echo "Configuring $conf"
+    if [[ "$conf" == *.conf ]] ; then
+      j2 --customize /customize.py --undefined -o "/tmp/$conf" "/templates/irida/$conf.j2" /base_config.yml
+      echo "The following changes will be applied to $conf:"
+      diff "${IRIDA_CONF_DIR}/$conf" "/tmp/$conf"
+      mv -f "/tmp/$conf" "${IRIDA_CONF_DIR}/$conf"
+    else
+      rsync -aP --delete "/templates/irida/$conf" "${IRIDA_CONF_DIR}/"
+    fi
+  done
+fi
+
 echo "Releasing all locks (except Galaxy) if it didn't happen already"
 locks=("$SLURM_CONF_DIR" "$HTCONDOR_CONF_DIR" "$PULSAR_CONF_DIR" "$KIND_CONF_DIR")
 for lock in "${locks[@]}"; do
@@ -138,7 +158,7 @@ if [ ! -f /base_config.yml ]; then
   touch /base_config.yml
 fi
 
-galaxy_configs=( "job_conf.xml" "galaxy.yml" "job_metrics.xml" "container_resolvers_conf.xml" "GALAXY_PROXY_PREFIX.txt" )
+galaxy_configs=( "tool_sheds_conf.xml" "job_conf.xml" "galaxy.yml" "job_metrics.xml" "container_resolvers_conf.xml" "GALAXY_PROXY_PREFIX.txt" )
 
 for conf in "${galaxy_configs[@]}"; do
   echo "Configuring $conf"

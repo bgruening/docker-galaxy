@@ -1,0 +1,2 @@
+https://github.com/COMBAT-SARS-COV-2/irida-plugin-sars-cov-2-illumina/releases/download/0.1.12/sarscov2-artic-illumina-pipeline-plugin-0.1.12.jar
+https://github.com/COMBAT-SARS-COV-2/irida-plugin-sars-cov-2-nanopore/releases/download/0.1.9/sarscov2-artic-nanopore-pipeline-plugin-0.1.9.jar
