@@ -39,7 +39,7 @@ RUN curl -s -L https://github.com/conda-forge/miniforge/releases/download/$MINIF
 
 FROM build_base AS build_galaxy
 
-ARG GALAXY_RELEASE=release_24.1
+ARG GALAXY_RELEASE=dev
 ARG GALAXY_REPO=https://github.com/galaxyproject/galaxy
 
 ENV NODE_OPTIONS=--max-old-space-size=4096
