@@ -737,6 +737,7 @@ When you execute the tool again, Galaxy will pull the image from Biocontainers (
 | `GALAXY_HANDLER_NUMPROCS` | Set the number of Galaxy handler (`GALAXY_HANDLER_NUMPROCS=2`) |
 | `LOAD_GALAXY_CONDITIONAL_DEPENDENCIES` | Installing optional dependencies into the Galaxy virtual environment |
 | `LOAD_PYTHON_DEV_DEPENDENCIES` | Installation of Galaxy's dev dependencies. Needs `LOAD_GALAXY_CONDITIONAL_DEPENDENCIES` as well |
+| `GALAXY_AUTO_UPDATE_DB` | Run the Galaxy database migration script during startup |
 
 
 # HTTPS Support <a name="HTTPS-Support"/> [[toc]](#toc)
