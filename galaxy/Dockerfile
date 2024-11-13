@@ -60,6 +60,15 @@ RUN mkdir $GALAXY_ROOT_DIR $GALAXY_VIRTUAL_ENV \
     && find $GALAXY_ROOT_DIR -name '*.pyc' -delete && find $GALAXY_VIRTUAL_ENV -name '*.pyc' -delete \ 
     && rm -rf $GALAXY_ROOT_DIR/client/node_modules/ $GALAXY_VIRTUAL_ENV/src/
 
+# This is need for gridengine to work with galaxy
+# https://github.com/galaxyproject/galaxy/issues/10425
+RUN cd / \
+    && curl -L -o jemalloc-5.3.0.tar.gz https://github.com/jemalloc/jemalloc/archive/5.3.0.tar.gz \
+    && tar -xvzf jemalloc-5.3.0.tar.gz \
+    && cd jemalloc-5.3.0 \
+    && ./autogen.sh && ./configure --disable-initial-exec-tls \
+    && make -j 4 && make install
+
 
 FROM ubuntu:22.04 AS galaxy_cluster_base
 
@@ -200,6 +209,7 @@ ENV GALAXY_CONFIG_MANAGED_CONFIG_DIR=$EXPORT_DIR/${GALAXY_ROOT_DIR#/}/database/c
 
 COPY --chown=$GALAXY_USER:$GALAXY_USER --from=build_galaxy $GALAXY_ROOT_DIR $GALAXY_ROOT_DIR
 COPY --chown=$GALAXY_USER:$GALAXY_USER --from=build_galaxy $GALAXY_VIRTUAL_ENV $GALAXY_VIRTUAL_ENV
+COPY --chown=root:root --from=build_galaxy /usr/local/lib/libjemalloc.so.2 /usr/local/lib/libjemalloc.so.2
 COPY --chown=$GALAXY_USER:$GALAXY_USER --from=build_miniforge $GALAXY_HOME $GALAXY_HOME
 COPY --chown=$GALAXY_USER:$GALAXY_USER --from=build_miniforge /etc/profile.d/conda.sh /etc/profile.d/conda.sh
 
@@ -218,8 +228,9 @@ RUN mkdir -p $GALAXY_CONFIG_TUS_UPLOAD_STORE \
     && su $GALAXY_USER -c "cp $GALAXY_ROOT_DIR/config/tool_conf.xml.sample $GALAXY_CONFIG_TOOL_CONFIG_FILE" \
     && curl -o $GALAXY_CONFIG_TOOL_DATA_TABLE_CONFIG_PATH \
     -L https://raw.githubusercontent.com/galaxyproject/usegalaxy-playbook/8adb1f82c94fe95b09df2a2816440ce2420b7d39/env/main/files/galaxy/config/tool_data_table_conf.xml \
-    && chown $GALAXY_USER:$GALAXY_USER $GALAXY_CONFIG_DIR/reports.yml $GALAXY_HOME/ephemeris/sample_tool_list.yaml $GALAXY_INTERACTIVE_TOOLS_CONFIG_FILE $GALAXY_CONFIG_TOOL_DATA_TABLE_CONFIG_PATH \
-    && chmod 0644 $GALAXY_CONFIG_DIR/reports.yml $GALAXY_HOME/ephemeris/sample_tool_list.yaml $GALAXY_INTERACTIVE_TOOLS_CONFIG_FILE $GALAXY_CONFIG_TOOL_DATA_TABLE_CONFIG_PATH
+    && chown $GALAXY_USER:$GALAXY_USER $GALAXY_CONFIG_TOOL_DATA_TABLE_CONFIG_PATH \
+    && mv /usr/lib/x86_64-linux-gnu/libjemalloc.so.2 /usr/lib/x86_64-linux-gnu/libjemalloc.so.2.orig \
+    && ln -s /usr/local/lib/libjemalloc.so.2 /usr/lib/x86_64-linux-gnu/libjemalloc.so.2
 
 # Include all needed scripts from the host
 ADD ./setup_postgresql.py /usr/local/bin/setup_postgresql.py

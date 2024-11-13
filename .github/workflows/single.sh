@@ -82,8 +82,7 @@ docker ps
 cd "${WORKING_DIR}/test/slurm/" && bash test.sh && cd "$WORKING_DIR"
 
 # Test submitting jobs to an external gridengine cluster
-# TODO 19.05, need to enable this again!
-# - cd $WORKING_DIR/test/gridengine/ && bash test.sh && cd $WORKING_DIR
+cd $WORKING_DIR/test/gridengine/ && bash test.sh || exit 1 && cd $WORKING_DIR
 
 echo 'Waiting for Galaxy to come up.'
 galaxy-wait -g $BIOBLEND_GALAXY_URL --timeout 600
@@ -92,11 +91,13 @@ curl -v --fail $BIOBLEND_GALAXY_URL/api/version
 
 # Test self-signed HTTPS
 docker_run -d --name httpstest -p 443:443 -e "USE_HTTPS=True" $DOCKER_RUN_CONTAINER
+sleep 30
+docker logs httpstest
 
 sleep 180s && curl -v -k --fail https://127.0.0.1:443/api/version
 echo | openssl s_client -connect 127.0.0.1:443 2>/dev/null | openssl x509 -issuer -noout| grep localhost
 
-docker logs httpstest && docker stop httpstest && docker rm httpstest
+docker stop httpstest && docker rm httpstest
 
 # Test FTP Server upload
 date > time.txt

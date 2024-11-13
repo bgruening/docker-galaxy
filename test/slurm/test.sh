@@ -36,4 +36,5 @@ sleep 60s
 docker exec galaxy-slurm-test su - galaxy -c 'srun hostname' | grep slurm
 docker stop galaxy-slurm-test slurm
 docker rm galaxy-slurm-test slurm
+docker rmi slurm
 # TODO: Run a galaxy tool and check it runs on the cluster
