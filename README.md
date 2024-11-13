@@ -395,7 +395,7 @@ docker run -i -t -p 8080:80 -p 8022:22 \
 And use for example [Filezilla](https://filezilla-project.org/) or the `sftp` program to transfer data:
 
 ```sh
-sftp -v -P 8022 -o User=admin@galaxy.org localhost <<< $'put <YOUR FILE HERE>'
+sftp -v -P 8022 -o User=admin@example.org localhost <<< $'put <YOUR FILE HERE>'
 ```
 
 
@@ -472,7 +472,7 @@ file_path = /export/galaxy/database/files
 *By default* the `admin_users` and `bootstrap_admin_api_key` variables are set to:
 
 ```
-admin_users: admin@galaxy.org
+admin_users: admin@example.org
 bootstrap_admin_api_key: HSNiugRFvgT574F43jZ7N9F3
 ```
 
@@ -900,7 +900,7 @@ In rare situations where you cannot share your tools but still want to include t
 
 # Users & Passwords <a name="Users-Passwords" /> [[toc]](#toc)
 
-The Galaxy Admin User has the username `admin@galaxy.org` and the password `password`.
+The Galaxy Admin User has the username `admin@example.org` and the password `password`.
 The PostgreSQL username is `galaxy`, the password is `galaxy` and the database name is `galaxy` (I know I was really creative ;)).
 If you want to create new users, please make sure to use the `/export/` volume. Otherwise your user will be removed after your docker session is finished.
 

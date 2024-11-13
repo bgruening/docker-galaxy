@@ -144,10 +144,10 @@
         include {{ nginx_conf_dir }}/delegated_uploads.conf;
 
         # error docs
-        error_page  502 503 504 {{ nginx_prefix_location }}/error/502/index.shtml;
+        error_page  502 503 504 {{ nginx_prefix_location }}/error/502/index.html;
         error_page  413         {{ nginx_prefix_location }}/error/413/index.html;
         error_page  500         {{ nginx_prefix_location }}/error/500/index.html;
         location {{ nginx_prefix_location }}/error {
-            ssi on;
-            alias {{ galaxy_errordocs_dest }};
+            internal;
+            alias {{ galaxy_errordocs_dir }};
         }

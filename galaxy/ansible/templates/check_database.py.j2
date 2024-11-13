@@ -21,5 +21,5 @@ if __name__ == "__main__":
     security_agent = mapping.security_agent
 
     # Just query something
-    query = sa_session.query(User).filter_by(email="admin@galaxy.org")
+    query = sa_session.query(User).filter_by(email="admin@example.org")
     query.count()
