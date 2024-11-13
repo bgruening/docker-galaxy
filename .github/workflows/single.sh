@@ -1,6 +1,21 @@
 #!/bin/bash
 set -ex
 
+# Change the default docker data directory as /mnt has more space
+sudo mkdir -p /mnt/docker
+
+if [ ! -f /etc/docker/daemon.json ]; then
+    echo '{}' | sudo tee /etc/docker/daemon.json
+fi
+
+sudo jq '."data-root"="/mnt/docker"' /etc/docker/daemon.json > /tmp/docker_daemon.json
+sudo mv /tmp/docker_daemon.json /etc/docker/daemon.json
+
+sudo systemctl daemon-reload && sudo systemctl restart docker
+
+docker --version
+docker info
+
 export GALAXY_HOME=/home/galaxy
 export GALAXY_USER=admin@example.org
 export GALAXY_USER_EMAIL=admin@example.org
@@ -18,9 +33,6 @@ sudo apt install ./dive_${DIVE_VERSION}_linux_amd64.deb
 rm ./dive_${DIVE_VERSION}_linux_amd64.deb
 
 pip3 install ephemeris
-
-docker --version
-docker info
 
 # start building this repo
 sudo chown 1450 /tmp && sudo chmod a=rwx /tmp
