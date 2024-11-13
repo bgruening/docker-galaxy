@@ -2,8 +2,8 @@
 set -ex
 
 export GALAXY_HOME=/home/galaxy
-export GALAXY_USER=admin@galaxy.org
-export GALAXY_USER_EMAIL=admin@galaxy.org
+export GALAXY_USER=admin@example.org
+export GALAXY_USER_EMAIL=admin@example.org
 export GALAXY_USER_PASSWD=password
 export BIOBLEND_GALAXY_API_KEY=fakekey
 export BIOBLEND_GALAXY_URL=http://localhost:8080

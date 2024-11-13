@@ -171,14 +171,14 @@ ENV GALAXY_CONFIG_MANAGED_CONFIG_DIR=$EXPORT_DIR/${GALAXY_ROOT_DIR#/}/database/c
     GALAXY_CONFIG_TOOL_DEPENDENCY_DIR=$EXPORT_DIR/tool_deps \
     GALAXY_CONFIG_TOOL_PATH=$EXPORT_DIR/${GALAXY_ROOT_DIR#/}/tools \
     GALAXY_DEFAULT_ADMIN_USER=admin \
-    GALAXY_DEFAULT_ADMIN_EMAIL=admin@galaxy.org \
+    GALAXY_DEFAULT_ADMIN_EMAIL=admin@example.org \
     GALAXY_DEFAULT_ADMIN_PASSWORD=password \
     GALAXY_DEFAULT_ADMIN_KEY=fakekey \
     GALAXY_DESTINATIONS_DEFAULT=slurm_cluster \
     GALAXY_RUNNERS_ENABLE_SLURM=True \
     GALAXY_RUNNERS_ENABLE_CONDOR=False \
     GALAXY_CONFIG_DATABASE_CONNECTION=postgresql://galaxy:galaxy@localhost:5432/galaxy?client_encoding=utf8 \
-    GALAXY_CONFIG_ADMIN_USERS=admin@galaxy.org \
+    GALAXY_CONFIG_ADMIN_USERS=admin@example.org \
     GALAXY_CONFIG_BOOTSTRAP_ADMIN_API_KEY=HSNiugRFvgT574F43jZ7N9F3 \
     GALAXY_CONFIG_BRAND="Galaxy Docker Build" \
     GALAXY_CONFIG_STATIC_ENABLED=False \
@@ -227,7 +227,7 @@ ADD ./setup_postgresql.py /usr/local/bin/setup_postgresql.py
 # Configure PostgreSQL
 # 1. Remove all old configuration
 # 2. Create DB-user 'galaxy' with password 'galaxy' in database 'galaxy'
-# 3. Create Galaxy Admin User 'admin@galaxy.org' with password 'admin' and API key 'admin'
+# 3. Create Galaxy Admin User 'admin@example.org' with password 'admin' and API key 'admin'
 
 RUN cd / \
     && rm $PG_DATA_DIR_DEFAULT -rf \
@@ -246,7 +246,7 @@ ENV GALAXY_CONFIG_JOB_WORKING_DIRECTORY=$EXPORT_DIR/${GALAXY_ROOT_DIR#/}/databas
     GALAXY_CONFIG_TEMPLATE_CACHE_PATH=$EXPORT_DIR/${GALAXY_ROOT_DIR#/}/database/compiled_templates \
     GALAXY_CONFIG_CITATION_CACHE_DATA_DIR=$EXPORT_DIR/${GALAXY_ROOT_DIR#/}/database/citations/data \
     GALAXY_CONFIG_FTP_UPLOAD_DIR=$EXPORT_DIR/ftp \
-    GALAXY_CONFIG_FTP_UPLOAD_SITE=galaxy.docker.org \
+    GALAXY_CONFIG_FTP_UPLOAD_SITE=example.org \
     GALAXY_CONFIG_USE_PBKDF2=True \
     GALAXY_CONFIG_NGINX_X_ACCEL_REDIRECT_BASE=/_x_accel_redirect \
     GALAXY_CONFIG_DYNAMIC_PROXY_MANAGE=False \
