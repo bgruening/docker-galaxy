@@ -183,7 +183,7 @@ nginx_welcome_location: "{{ nginx_prefix_location }}/etc/galaxy/web"
 nginx_welcome_path: "/etc/galaxy/web"
 
 # Synchronize error handling with ansible-galaxy role.
-galaxy_errordocs_dest: "/root"
+galaxy_errordocs_dir: "/var/www/galaxy_errordocs"
 
 #web security
 nginx_use_passwords: false
