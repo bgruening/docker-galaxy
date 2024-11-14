@@ -1,0 +1,28 @@
+# docker-compose wrapper for the single Galaxy container. This is useful for systems like EGI IM.
+# Start via `IMAGE_TAG=dev GALAXY_CONFIG_BRAND=foo docker-compose up`
+services:
+  galaxy-server:
+    image: ${DOCKER_REGISTRY:-quay.io}/${DOCKER_REGISTRY_USERNAME:-bgruening}/galaxy:${IMAGE_TAG:-latest}
+    build: ./
+    environment:
+      - GALAXY_DEFAULT_ADMIN_USER=admin
+      - GALAXY_DEFAULT_ADMIN_EMAIL=admin@example.org
+      - GALAXY_DEFAULT_ADMIN_PASSWORD=password
+      - GALAXY_DEFAULT_ADMIN_KEY=fakekey
+      - GALAXY_DESTINATIONS_DEFAULT=slurm_cluster_docker
+      - GALAXY_CONFIG_BRAND=${GALAXY_CONFIG_BRAND:-My own Galaxy flavour}
+      - GALAXY_AUTO_UPDATE_DB=True
+    hostname: galaxy-server
+    privileged: True
+    ports:
+      - "8080:80"
+      - "9002:9002"
+      - "4002:4002"
+      - "8021:21"
+      - "8022:22"
+    volumes:
+      # This is the directory where all your files from Galaxy will be stored
+      # on your host system
+      - ${EXPORT_DIR:-./export}/:/export/:delegated
+      - ${EXPORT_DIR:-./export}/tus_upload_store:/tus_upload_store:delegated
+      - /var/run/docker.sock:/var/run/docker.sock
