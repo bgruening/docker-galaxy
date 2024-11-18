@@ -27,7 +27,7 @@ jobs:
         run: pip install -r docs/src/requirements.txt
 
       - name: Generate documentation
-        run: python generate_docs.py
+        run: python docs/src/generate_docs.py
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
