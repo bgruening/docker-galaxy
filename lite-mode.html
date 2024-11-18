@@ -1,0 +1,163 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="chrome=1" http-equiv="X-UA-Compatible"/>
+  <title>
+   Galaxy Docker Image by bgruening
+  </title>
+  <link href="css/landing_page.css" rel="stylesheet"/>
+ </head>
+ <body>
+  <div class="wrapper">
+   <header>
+    <h1>
+     Galaxy Docker Image
+    </h1>
+    <p>
+     Docker Images tracking the stable Galaxy releases
+    </p>
+    <p class="bold" string="Table of content">
+    </p>
+    <ul>
+     <li>
+      <a href="index.html">
+       Global description
+      </a>
+     </li>
+     <li>
+      <a href="usage.html">
+       Usage
+      </a>
+     </li>
+     <li>
+      <a href="auto-exec-tools-in-docker.html">
+       Enable Galaxy to use BioContainers (Docker)
+      </a>
+     </li>
+     <li>
+      <a href="magic-environment-variables.html">
+       Magic Environment variables
+      </a>
+     </li>
+     <li>
+      <a href="https-support.html">
+       HTTPS Support
+      </a>
+     </li>
+     <li>
+      <a href="lite-mode.html">
+       Lite Mode
+      </a>
+     </li>
+     <li>
+      <a href="extending-the-docker-image.html">
+       Extending the Docker Image
+      </a>
+     </li>
+     <li>
+      <a href="integrating-non-tool-shed-tools-into-the-container.html">
+       Integrating non-Tool Shed tools into the container
+      </a>
+     </li>
+     <li>
+      <a href="users-passwords.html">
+       Users &amp; Passwords
+      </a>
+     </li>
+     <li>
+      <a href="development.html">
+       Development
+      </a>
+     </li>
+     <li>
+      <a href="requirements.html">
+       Requirements
+      </a>
+     </li>
+     <li>
+      <a href="support-bug-reports.html">
+       Support &amp; Bug Reports
+      </a>
+     </li>
+    </ul>
+    <p class="view">
+     <a href="https://github.com/bgruening/docker-galaxy">
+      View the Project on GitHub
+      <small>
+       bgruening/docker-galaxy
+      </small>
+     </a>
+    </p>
+    <ul class="box">
+     <li class="box">
+      <a href="https://github.com/bgruening/docker-galaxy/zipball/master">
+       Download
+       <strong>
+        ZIP File
+       </strong>
+      </a>
+     </li>
+     <li class="box">
+      <a href="https://github.com/bgruening/docker-galaxy/tarball/master">
+       Download
+       <strong>
+        TAR Ball
+       </strong>
+      </a>
+     </li>
+     <li class="box">
+      <a href="https://github.com/bgruening/docker-galaxy">
+       View On
+       <strong>
+        GitHub
+       </strong>
+      </a>
+     </li>
+    </ul>
+   </header>
+   <section>
+    <h1>
+     Lite Mode
+    </h1>
+    <p>
+     The lite mode will only start postgresql and a single Galaxy process, without nginx, gunicorn or any other special feature from the normal mode. In particular there is no support for the export folder or any Magic Environment variables.
+    </p>
+    <pre><code class="language-sh">docker run -i -t -p 8080:8080 quay.io/bgruening/galaxy startup_lite
+</code></pre>
+    <p>
+     This will also use the standard
+     <code>
+      job_conf.xml.sample_basic
+     </code>
+     shipped by Galaxy. If you want to use the regular one from the normal mode you can pass
+     <code>
+      -j
+     </code>
+     to the
+     <code>
+      startup_lite
+     </code>
+     script.
+    </p>
+   </section>
+   <footer>
+    <p>
+     This project is maintained by
+     <a href="https://github.com/bgruening">
+      bgruening
+     </a>
+    </p>
+    <p>
+     <small>
+      Hosted on GitHub Pages — Theme by
+      <a href="https://github.com/orderedlist">
+       orderedlist
+      </a>
+     </small>
+    </p>
+   </footer>
+   <script src="js/landing_page.js">
+   </script>
+  </div>
+ </body>
+</html>

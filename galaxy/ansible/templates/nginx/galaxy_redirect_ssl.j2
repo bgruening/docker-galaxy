@@ -1,9 +1,0 @@
-server {
-        listen 80 default_server;
-        listen [::]:80 default_server;
-
-        location /.well-known/ {
-	        root {{ certbot_well_known_root }};
-        }
-        rewrite ^ https://$host$request_uri permanent;
-}

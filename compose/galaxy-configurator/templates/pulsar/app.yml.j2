@@ -1,8 +1,0 @@
-managers:
-  {% if PULSAR_JOB_RUNNER == 'local' -%}
-  _default_:
-    type: queued_python
-    num_concurrent_jobs: {{ PULSAR_NUM_CONCURRENT_JOBS | default(1) }}
-  {% endif %}
-
-{{ pulsar | to_nice_yaml(indent=2) }}

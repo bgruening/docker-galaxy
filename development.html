@@ -1,0 +1,188 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="chrome=1" http-equiv="X-UA-Compatible"/>
+  <title>
+   Galaxy Docker Image by bgruening
+  </title>
+  <link href="css/landing_page.css" rel="stylesheet"/>
+ </head>
+ <body>
+  <div class="wrapper">
+   <header>
+    <h1>
+     Galaxy Docker Image
+    </h1>
+    <p>
+     Docker Images tracking the stable Galaxy releases
+    </p>
+    <p class="bold" string="Table of content">
+    </p>
+    <ul>
+     <li>
+      <a href="index.html">
+       Global description
+      </a>
+     </li>
+     <li>
+      <a href="usage.html">
+       Usage
+      </a>
+     </li>
+     <li>
+      <a href="auto-exec-tools-in-docker.html">
+       Enable Galaxy to use BioContainers (Docker)
+      </a>
+     </li>
+     <li>
+      <a href="magic-environment-variables.html">
+       Magic Environment variables
+      </a>
+     </li>
+     <li>
+      <a href="https-support.html">
+       HTTPS Support
+      </a>
+     </li>
+     <li>
+      <a href="lite-mode.html">
+       Lite Mode
+      </a>
+     </li>
+     <li>
+      <a href="extending-the-docker-image.html">
+       Extending the Docker Image
+      </a>
+     </li>
+     <li>
+      <a href="integrating-non-tool-shed-tools-into-the-container.html">
+       Integrating non-Tool Shed tools into the container
+      </a>
+     </li>
+     <li>
+      <a href="users-passwords.html">
+       Users &amp; Passwords
+      </a>
+     </li>
+     <li>
+      <a href="development.html">
+       Development
+      </a>
+     </li>
+     <li>
+      <a href="requirements.html">
+       Requirements
+      </a>
+     </li>
+     <li>
+      <a href="support-bug-reports.html">
+       Support &amp; Bug Reports
+      </a>
+     </li>
+    </ul>
+    <p class="view">
+     <a href="https://github.com/bgruening/docker-galaxy">
+      View the Project on GitHub
+      <small>
+       bgruening/docker-galaxy
+      </small>
+     </a>
+    </p>
+    <ul class="box">
+     <li class="box">
+      <a href="https://github.com/bgruening/docker-galaxy/zipball/master">
+       Download
+       <strong>
+        ZIP File
+       </strong>
+      </a>
+     </li>
+     <li class="box">
+      <a href="https://github.com/bgruening/docker-galaxy/tarball/master">
+       Download
+       <strong>
+        TAR Ball
+       </strong>
+      </a>
+     </li>
+     <li class="box">
+      <a href="https://github.com/bgruening/docker-galaxy">
+       View On
+       <strong>
+        GitHub
+       </strong>
+      </a>
+     </li>
+    </ul>
+   </header>
+   <section>
+    <h1>
+     Development
+    </h1>
+    <p>
+     You can clone this repository with:
+    </p>
+    <pre><code class="language-sh">git clone https://github.com/bgruening/docker-galaxy-stable.git
+</code></pre>
+    <p>
+     This repository uses various
+     <a href="http://www.ansible.com/">
+      Ansible
+     </a>
+     roles as specified in
+     <a href="galaxy/ansible/requirements.yml">
+      requirements.yml
+     </a>
+     to manage configurations and dependencies. You can install these roles with the following command:
+    </p>
+    <pre><code class="language-sh">cd galaxy/ansible/ &amp;&amp; ansible-galaxy install -r requirements.yml -p roles
+</code></pre>
+    <p>
+     If you simply want to change the Galaxy repository and/or the Galaxy branch, from which the container is build you can do this with Docker
+     <code>
+      --build-arg
+     </code>
+     during the
+     <code>
+      docker build
+     </code>
+     step. For example you can use these parameters during container build:
+    </p>
+    <pre><code> --build-arg GALAXY_RELEASE=install_workflow_and_tools
+ --build-arg GALAXY_REPO=https://github.com/manabuishii/galaxy
+</code></pre>
+    <p>
+     To keep docker images lean and optimize storage, we recommend using
+     <a href="https://github.com/wagoodman/dive">
+      Dive
+     </a>
+     . It provides an interactive UI that lets you explore each layer of the image, helping you quickly identify files and directories that take up significant space. To install Dive, follow the installation instructions provided in the
+     <a href="https://github.com/wagoodman/dive?tab=readme-ov-file#installation">
+      Dive GitHub repository
+     </a>
+     . After building your docker image, use Dive to analyze it:
+    </p>
+    <pre><code class="language-bash">dive &lt;your-docker-image-name&gt;
+</code></pre>
+   </section>
+   <footer>
+    <p>
+     This project is maintained by
+     <a href="https://github.com/bgruening">
+      bgruening
+     </a>
+    </p>
+    <p>
+     <small>
+      Hosted on GitHub Pages — Theme by
+      <a href="https://github.com/orderedlist">
+       orderedlist
+      </a>
+     </small>
+    </p>
+   </footer>
+   <script src="js/landing_page.js">
+   </script>
+  </div>
+ </body>
+</html>

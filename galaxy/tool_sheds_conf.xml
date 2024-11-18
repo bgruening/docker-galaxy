@@ -1,6 +1,0 @@
-<?xml version="1.0"?>
-<!-- This file is only used if the container is started with -e ENABLE_TTS_INSTALL=True -->
-<tool_sheds>
-    <tool_shed name="Galaxy Main Tool Shed" url="https://toolshed.g2.bx.psu.edu/"/>
-    <tool_shed name="Galaxy Test Tool Shed" url="https://testtoolshed.g2.bx.psu.edu/"/>
-</tool_sheds>

@@ -1,9 +1,0 @@
-{% for key, value in slurm.items() -%}
-{{ key }}={{ value }}
-{% endfor %}
-
-{% set slurm_node_count = SLURM_NODE_COUNT | int -%}
-{% for i in range(1, slurm_node_count + 1) -%}
-NodeName={{ SLURM_NODE_HOSTNAME }}_{{ i }} NodeAddr={{ SLURM_NODE_HOSTNAME }}_{{ i }} NodeHostname={{ SLURM_NODE_HOSTNAME }}_{{ i }} CPUs={{ SLURM_NODE_CPUS | default(1, true) }} RealMemory={{ SLURM_NODE_MEMORY | default(1024, true) }} State=UNKNOWN
-{% endfor %}
-PartitionName=work Nodes={% for i in range(1, slurm_node_count + 1) -%}{{ SLURM_NODE_HOSTNAME }}_{{ i }}{%- if not loop.last -%},{% endif %}{% endfor %} Default=YES MaxTime=INFINITE State=UP Shared=YES # TODO

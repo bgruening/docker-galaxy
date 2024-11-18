@@ -1,0 +1,317 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="chrome=1" http-equiv="X-UA-Compatible"/>
+  <title>
+   Galaxy Docker Image by bgruening
+  </title>
+  <link href="css/landing_page.css" rel="stylesheet"/>
+ </head>
+ <body>
+  <div class="wrapper">
+   <header>
+    <h1>
+     Galaxy Docker Image
+    </h1>
+    <p>
+     Docker Images tracking the stable Galaxy releases
+    </p>
+    <p class="bold" string="Table of content">
+    </p>
+    <ul>
+     <li>
+      <a href="index.html">
+       Global description
+      </a>
+     </li>
+     <li>
+      <a href="usage.html">
+       Usage
+      </a>
+     </li>
+     <li>
+      <a href="auto-exec-tools-in-docker.html">
+       Enable Galaxy to use BioContainers (Docker)
+      </a>
+     </li>
+     <li>
+      <a href="magic-environment-variables.html">
+       Magic Environment variables
+      </a>
+     </li>
+     <li>
+      <a href="https-support.html">
+       HTTPS Support
+      </a>
+     </li>
+     <li>
+      <a href="lite-mode.html">
+       Lite Mode
+      </a>
+     </li>
+     <li>
+      <a href="extending-the-docker-image.html">
+       Extending the Docker Image
+      </a>
+     </li>
+     <li>
+      <a href="integrating-non-tool-shed-tools-into-the-container.html">
+       Integrating non-Tool Shed tools into the container
+      </a>
+     </li>
+     <li>
+      <a href="users-passwords.html">
+       Users &amp; Passwords
+      </a>
+     </li>
+     <li>
+      <a href="development.html">
+       Development
+      </a>
+     </li>
+     <li>
+      <a href="requirements.html">
+       Requirements
+      </a>
+     </li>
+     <li>
+      <a href="support-bug-reports.html">
+       Support &amp; Bug Reports
+      </a>
+     </li>
+    </ul>
+    <p class="view">
+     <a href="https://github.com/bgruening/docker-galaxy">
+      View the Project on GitHub
+      <small>
+       bgruening/docker-galaxy
+      </small>
+     </a>
+    </p>
+    <ul class="box">
+     <li class="box">
+      <a href="https://github.com/bgruening/docker-galaxy/zipball/master">
+       Download
+       <strong>
+        ZIP File
+       </strong>
+      </a>
+     </li>
+     <li class="box">
+      <a href="https://github.com/bgruening/docker-galaxy/tarball/master">
+       Download
+       <strong>
+        TAR Ball
+       </strong>
+      </a>
+     </li>
+     <li class="box">
+      <a href="https://github.com/bgruening/docker-galaxy">
+       View On
+       <strong>
+        GitHub
+       </strong>
+      </a>
+     </li>
+    </ul>
+   </header>
+   <section>
+    <h1>
+     Magic Environment variables
+    </h1>
+    <table>
+     <thead>
+      <tr>
+       <th>
+        Name
+       </th>
+       <th>
+        Description
+       </th>
+      </tr>
+     </thead>
+     <tbody>
+      <tr>
+       <td>
+        <code>
+         ENABLE_TTS_INSTALL
+        </code>
+       </td>
+       <td>
+        Enables the Test Tool Shed during container startup. This change is not persistent. (
+        <code>
+         ENABLE_TTS_INSTALL=True
+        </code>
+        )
+       </td>
+      </tr>
+      <tr>
+       <td>
+        <code>
+         GALAXY_LOGGING
+        </code>
+       </td>
+       <td>
+        Enables for verbose logging at Docker stdout. (
+        <code>
+         GALAXY_LOGGING=full
+        </code>
+        )
+       </td>
+      </tr>
+      <tr>
+       <td>
+        <code>
+         BARE
+        </code>
+       </td>
+       <td>
+        Disables all default Galaxy tools. (
+        <code>
+         BARE=True
+        </code>
+        )
+       </td>
+      </tr>
+      <tr>
+       <td>
+        <code>
+         NONUSE
+        </code>
+       </td>
+       <td>
+        Disable services during container startup. (
+        <code>
+         NONUSE=cron,proftp,reports,nodejs,condor,slurmd,slurmctld,celery,rabbitmq,redis,flower,tusd
+        </code>
+        )
+       </td>
+      </tr>
+      <tr>
+       <td>
+        <code>
+         GUNICORN_WORKERS
+        </code>
+       </td>
+       <td>
+        Set the number of gunicorn workers (
+        <code>
+         GUNICORN_WORKERS=2
+        </code>
+        )
+       </td>
+      </tr>
+      <tr>
+       <td>
+        <code>
+         CELERY_WORKERS
+        </code>
+       </td>
+       <td>
+        Set the number of celery workers (
+        <code>
+         CELERY_WORKERS=2
+        </code>
+        )
+       </td>
+      </tr>
+      <tr>
+       <td>
+        <code>
+         GALAXY_DOCKER_ENABLED
+        </code>
+       </td>
+       <td>
+        Enable Galaxy to use Docker containers if annotated in tools (
+        <code>
+         GALAXY_DOCKER_ENABLED=False
+        </code>
+        )
+       </td>
+      </tr>
+      <tr>
+       <td>
+        <code>
+         GALAXY_DOCKER_VOLUMES
+        </code>
+       </td>
+       <td>
+        Specify volumes that should be mounted into tool containers (
+        <code>
+         GALAXY_DOCKER_VOLUMES=""
+        </code>
+        )
+       </td>
+      </tr>
+      <tr>
+       <td>
+        <code>
+         GALAXY_HANDLER_NUMPROCS
+        </code>
+       </td>
+       <td>
+        Set the number of Galaxy handler (
+        <code>
+         GALAXY_HANDLER_NUMPROCS=2
+        </code>
+        )
+       </td>
+      </tr>
+      <tr>
+       <td>
+        <code>
+         LOAD_GALAXY_CONDITIONAL_DEPENDENCIES
+        </code>
+       </td>
+       <td>
+        Installing optional dependencies into the Galaxy virtual environment
+       </td>
+      </tr>
+      <tr>
+       <td>
+        <code>
+         LOAD_PYTHON_DEV_DEPENDENCIES
+        </code>
+       </td>
+       <td>
+        Installation of Galaxy's dev dependencies. Needs
+        <code>
+         LOAD_GALAXY_CONDITIONAL_DEPENDENCIES
+        </code>
+        as well
+       </td>
+      </tr>
+      <tr>
+       <td>
+        <code>
+         GALAXY_AUTO_UPDATE_DB
+        </code>
+       </td>
+       <td>
+        Run the Galaxy database migration script during startup
+       </td>
+      </tr>
+     </tbody>
+    </table>
+   </section>
+   <footer>
+    <p>
+     This project is maintained by
+     <a href="https://github.com/bgruening">
+      bgruening
+     </a>
+    </p>
+    <p>
+     <small>
+      Hosted on GitHub Pages — Theme by
+      <a href="https://github.com/orderedlist">
+       orderedlist
+      </a>
+     </small>
+    </p>
+   </footer>
+   <script src="js/landing_page.js">
+   </script>
+  </div>
+ </body>
+</html>

@@ -1,0 +1,228 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="chrome=1" http-equiv="X-UA-Compatible"/>
+  <title>
+   Galaxy Docker Image by bgruening
+  </title>
+  <link href="css/landing_page.css" rel="stylesheet"/>
+ </head>
+ <body>
+  <div class="wrapper">
+   <header>
+    <h1>
+     Galaxy Docker Image
+    </h1>
+    <p>
+     Docker Images tracking the stable Galaxy releases
+    </p>
+    <p class="bold" string="Table of content">
+    </p>
+    <ul>
+     <li>
+      <a href="index.html">
+       Global description
+      </a>
+     </li>
+     <li>
+      <a href="usage.html">
+       Usage
+      </a>
+     </li>
+     <li>
+      <a href="auto-exec-tools-in-docker.html">
+       Enable Galaxy to use BioContainers (Docker)
+      </a>
+     </li>
+     <li>
+      <a href="magic-environment-variables.html">
+       Magic Environment variables
+      </a>
+     </li>
+     <li>
+      <a href="https-support.html">
+       HTTPS Support
+      </a>
+     </li>
+     <li>
+      <a href="lite-mode.html">
+       Lite Mode
+      </a>
+     </li>
+     <li>
+      <a href="extending-the-docker-image.html">
+       Extending the Docker Image
+      </a>
+     </li>
+     <li>
+      <a href="integrating-non-tool-shed-tools-into-the-container.html">
+       Integrating non-Tool Shed tools into the container
+      </a>
+     </li>
+     <li>
+      <a href="users-passwords.html">
+       Users &amp; Passwords
+      </a>
+     </li>
+     <li>
+      <a href="development.html">
+       Development
+      </a>
+     </li>
+     <li>
+      <a href="requirements.html">
+       Requirements
+      </a>
+     </li>
+     <li>
+      <a href="support-bug-reports.html">
+       Support &amp; Bug Reports
+      </a>
+     </li>
+    </ul>
+    <p class="view">
+     <a href="https://github.com/bgruening/docker-galaxy">
+      View the Project on GitHub
+      <small>
+       bgruening/docker-galaxy
+      </small>
+     </a>
+    </p>
+    <ul class="box">
+     <li class="box">
+      <a href="https://github.com/bgruening/docker-galaxy/zipball/master">
+       Download
+       <strong>
+        ZIP File
+       </strong>
+      </a>
+     </li>
+     <li class="box">
+      <a href="https://github.com/bgruening/docker-galaxy/tarball/master">
+       Download
+       <strong>
+        TAR Ball
+       </strong>
+      </a>
+     </li>
+     <li class="box">
+      <a href="https://github.com/bgruening/docker-galaxy">
+       View On
+       <strong>
+        GitHub
+       </strong>
+      </a>
+     </li>
+    </ul>
+   </header>
+   <section>
+    <h1>
+     HTTPS Support
+    </h1>
+    <p>
+     It's possible to automatically configure your container with HTTPS, either with
+certificates of your own or by automatically requesting an HTTPS certificate from
+Letsencrypt with the following environment variables:
+    </p>
+    <table>
+     <thead>
+      <tr>
+       <th>
+        Name
+       </th>
+       <th>
+        Description
+       </th>
+      </tr>
+     </thead>
+     <tbody>
+      <tr>
+       <td>
+        <code>
+         USE_HTTPS
+        </code>
+       </td>
+       <td>
+        Set
+        <code>
+         USE_HTTPS=True
+        </code>
+        to set up HTTPS via self-signed certificates (CN is set to the value of
+        <code>
+         GALAXY_DOMAIN
+        </code>
+        variable, defaulting to
+        <code>
+         localhost
+        </code>
+        if no value is provided). If you have your own certificates, copy them to
+        <code>
+         /export/{server.key,server.crt}
+        </code>
+        .
+       </td>
+      </tr>
+      <tr>
+       <td>
+        <code>
+         USE_HTTPS_LETSENCRYPT
+        </code>
+       </td>
+       <td>
+        Set
+        <code>
+         USE_HTTPS_LETSENCRYPT=True
+        </code>
+        to automatically set up HTTPS using Letsencrypt as a certificate authority. (Requires you to also set
+        <code>
+         GALAXY_DOMAIN
+        </code>
+        ) Note: only set one of
+        <code>
+         USE_HTTPS
+        </code>
+        and
+        <code>
+         USE_HTTPS_LETSENCRYPT
+        </code>
+        to true.
+       </td>
+      </tr>
+      <tr>
+       <td>
+        <code>
+         GALAXY_DOMAIN
+        </code>
+       </td>
+       <td>
+        Set
+        <code>
+         GALAXY_DOMAIN=&lt;your_domain&gt;
+        </code>
+        so that Letsencrypt can test your that you own the domain you claim to own in order to issue you your HTTPS cert.
+       </td>
+      </tr>
+     </tbody>
+    </table>
+   </section>
+   <footer>
+    <p>
+     This project is maintained by
+     <a href="https://github.com/bgruening">
+      bgruening
+     </a>
+    </p>
+    <p>
+     <small>
+      Hosted on GitHub Pages — Theme by
+      <a href="https://github.com/orderedlist">
+       orderedlist
+      </a>
+     </small>
+    </p>
+   </footer>
+   <script src="js/landing_page.js">
+   </script>
+  </div>
+ </body>
+</html>

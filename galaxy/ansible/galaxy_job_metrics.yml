@@ -1,6 +1,0 @@
-- hosts: localhost
-  connection: local
-  remote_user: root
-  tasks:
-    - name: "Setup job metrics"
-      template: src=job_metrics_conf.yml.j2 dest={{ galaxy_job_metrics_conf_path }} owner={{ galaxy_user_name }} group={{ galaxy_user_name }}

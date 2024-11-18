@@ -1,0 +1,198 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="chrome=1" http-equiv="X-UA-Compatible"/>
+  <title>
+   Galaxy Docker Image by bgruening
+  </title>
+  <link href="css/landing_page.css" rel="stylesheet"/>
+ </head>
+ <body>
+  <div class="wrapper">
+   <header>
+    <h1>
+     Galaxy Docker Image
+    </h1>
+    <p>
+     Docker Images tracking the stable Galaxy releases
+    </p>
+    <p class="bold" string="Table of content">
+    </p>
+    <ul>
+     <li>
+      <a href="index.html">
+       Global description
+      </a>
+     </li>
+     <li>
+      <a href="usage.html">
+       Usage
+      </a>
+     </li>
+     <li>
+      <a href="auto-exec-tools-in-docker.html">
+       Enable Galaxy to use BioContainers (Docker)
+      </a>
+     </li>
+     <li>
+      <a href="magic-environment-variables.html">
+       Magic Environment variables
+      </a>
+     </li>
+     <li>
+      <a href="https-support.html">
+       HTTPS Support
+      </a>
+     </li>
+     <li>
+      <a href="lite-mode.html">
+       Lite Mode
+      </a>
+     </li>
+     <li>
+      <a href="extending-the-docker-image.html">
+       Extending the Docker Image
+      </a>
+     </li>
+     <li>
+      <a href="integrating-non-tool-shed-tools-into-the-container.html">
+       Integrating non-Tool Shed tools into the container
+      </a>
+     </li>
+     <li>
+      <a href="users-passwords.html">
+       Users &amp; Passwords
+      </a>
+     </li>
+     <li>
+      <a href="development.html">
+       Development
+      </a>
+     </li>
+     <li>
+      <a href="requirements.html">
+       Requirements
+      </a>
+     </li>
+     <li>
+      <a href="support-bug-reports.html">
+       Support &amp; Bug Reports
+      </a>
+     </li>
+    </ul>
+    <p class="view">
+     <a href="https://github.com/bgruening/docker-galaxy">
+      View the Project on GitHub
+      <small>
+       bgruening/docker-galaxy
+      </small>
+     </a>
+    </p>
+    <ul class="box">
+     <li class="box">
+      <a href="https://github.com/bgruening/docker-galaxy/zipball/master">
+       Download
+       <strong>
+        ZIP File
+       </strong>
+      </a>
+     </li>
+     <li class="box">
+      <a href="https://github.com/bgruening/docker-galaxy/tarball/master">
+       Download
+       <strong>
+        TAR Ball
+       </strong>
+      </a>
+     </li>
+     <li class="box">
+      <a href="https://github.com/bgruening/docker-galaxy">
+       View On
+       <strong>
+        GitHub
+       </strong>
+      </a>
+     </li>
+    </ul>
+   </header>
+   <section>
+    <h1>
+     Enable Galaxy to use BioContainers (Docker)
+    </h1>
+    <p>
+     This is a very cool feature where Galaxy automatically detects that your tool has an associated docker image, pulls it and runs it for you. These images (when available) have been generated using
+     <a href="https://github.com/mulled">
+      mulled
+     </a>
+     . To test, install the
+     <a href="https://toolshed.g2.bx.psu.edu/repository?repository_id=8d84903cc667dbe7&amp;changeset_revision=7b3aaff0d78c">
+      IUC bedtools
+     </a>
+     from the toolshed. When you try to execute
+     <em>
+      ClusterBed
+     </em>
+     for example. You may get a missing dependancy error for
+     <em>
+      bedtools
+     </em>
+     . But bedtools has an associated docker image on
+     <a href="https://quay.io/">
+      quay.io
+     </a>
+     .  Now configure Galaxy as follows:
+    </p>
+    <ul>
+     <li>
+      Add this environment variable to
+      <code>
+       docker run
+      </code>
+      :
+      <code>
+       -e GALAXY_CONFIG_ENABLE_MULLED_CONTAINERS=True
+      </code>
+     </li>
+     <li>
+      In
+      <code>
+       job_conf.xml
+      </code>
+      configure a Docker enabled destination as follows:
+     </li>
+    </ul>
+    <pre><code class="language-xml">&lt;destination id="docker_local" runner="local"&gt;
+    &lt;param id="docker_enabled"&gt;true&lt;/param&gt;
+    &lt;param id="docker_volumes"&gt;$galaxy_root:ro,$galaxy_root/database/tmp:rw,$tool_directory:ro,$job_directory:ro,$working_directory:rw,$default_file_path:rw&lt;/param&gt;
+    &lt;param id="docker_sudo"&gt;false&lt;/param&gt;
+&lt;/destination&gt;
+</code></pre>
+    <p>
+     When you execute the tool again, Galaxy will pull the image from Biocontainers (
+     <a href="https://quay.io/organization/biocontainers">
+      quay.io/biocontainers
+     </a>
+     ), run the tool inside of this container to produce the desired output.
+    </p>
+   </section>
+   <footer>
+    <p>
+     This project is maintained by
+     <a href="https://github.com/bgruening">
+      bgruening
+     </a>
+    </p>
+    <p>
+     <small>
+      Hosted on GitHub Pages — Theme by
+      <a href="https://github.com/orderedlist">
+       orderedlist
+      </a>
+     </small>
+    </p>
+   </footer>
+   <script src="js/landing_page.js">
+   </script>
+  </div>
+ </body>
+</html>

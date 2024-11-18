@@ -1,4 +1,0 @@
-CVMFS_REPOSITORIES="data.galaxyproject.org,singularity.galaxyproject.org"
-CVMFS_HTTP_PROXY="DIRECT"
-CVMFS_QUOTA_LIMIT="4000"
-CVMFS_CACHE_BASE="/srv/cvmfs/cache"

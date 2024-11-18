@@ -1,0 +1,216 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="chrome=1" http-equiv="X-UA-Compatible"/>
+  <title>
+   Galaxy Docker Image by bgruening
+  </title>
+  <link href="css/landing_page.css" rel="stylesheet"/>
+ </head>
+ <body>
+  <div class="wrapper">
+   <header>
+    <h1>
+     Galaxy Docker Image
+    </h1>
+    <p>
+     Docker Images tracking the stable Galaxy releases
+    </p>
+    <p class="bold" string="Table of content">
+    </p>
+    <ul>
+     <li>
+      <a href="index.html">
+       Global description
+      </a>
+     </li>
+     <li>
+      <a href="usage.html">
+       Usage
+      </a>
+     </li>
+     <li>
+      <a href="auto-exec-tools-in-docker.html">
+       Enable Galaxy to use BioContainers (Docker)
+      </a>
+     </li>
+     <li>
+      <a href="magic-environment-variables.html">
+       Magic Environment variables
+      </a>
+     </li>
+     <li>
+      <a href="https-support.html">
+       HTTPS Support
+      </a>
+     </li>
+     <li>
+      <a href="lite-mode.html">
+       Lite Mode
+      </a>
+     </li>
+     <li>
+      <a href="extending-the-docker-image.html">
+       Extending the Docker Image
+      </a>
+     </li>
+     <li>
+      <a href="integrating-non-tool-shed-tools-into-the-container.html">
+       Integrating non-Tool Shed tools into the container
+      </a>
+     </li>
+     <li>
+      <a href="users-passwords.html">
+       Users &amp; Passwords
+      </a>
+     </li>
+     <li>
+      <a href="development.html">
+       Development
+      </a>
+     </li>
+     <li>
+      <a href="requirements.html">
+       Requirements
+      </a>
+     </li>
+     <li>
+      <a href="support-bug-reports.html">
+       Support &amp; Bug Reports
+      </a>
+     </li>
+    </ul>
+    <p class="view">
+     <a href="https://github.com/bgruening/docker-galaxy">
+      View the Project on GitHub
+      <small>
+       bgruening/docker-galaxy
+      </small>
+     </a>
+    </p>
+    <ul class="box">
+     <li class="box">
+      <a href="https://github.com/bgruening/docker-galaxy/zipball/master">
+       Download
+       <strong>
+        ZIP File
+       </strong>
+      </a>
+     </li>
+     <li class="box">
+      <a href="https://github.com/bgruening/docker-galaxy/tarball/master">
+       Download
+       <strong>
+        TAR Ball
+       </strong>
+      </a>
+     </li>
+     <li class="box">
+      <a href="https://github.com/bgruening/docker-galaxy">
+       View On
+       <strong>
+        GitHub
+       </strong>
+      </a>
+     </li>
+    </ul>
+   </header>
+   <section>
+    <h1>
+     Integrating non-Tool Shed tools into the container
+    </h1>
+    <p>
+     We recommend to use the
+     <a href="https://toolshed.g2.bx.psu.edu/">
+      Main Galaxy Tool Shed
+     </a>
+     for all your tools and workflows that you would like to share.
+In rare situations where you cannot share your tools but still want to include them into your Galaxy Docker instance, please follow the next steps.
+    </p>
+    <ul>
+     <li>
+      <p>
+       Get your tools into the container.
+      </p>
+      <p>
+       Mount your tool directory into the container with a separate
+       <code>
+        -v /home/user/my_galaxy_tools/:/local_tools
+       </code>
+       .
+      </p>
+     </li>
+     <li>
+      <p>
+       Create a
+       <code>
+        tool_conf.xml
+       </code>
+       file for your tools.
+      </p>
+      <p>
+       This should look similar to the main
+       <a href="https://github.com/galaxyproject/galaxy/blob/dev/lib/galaxy/config/sample/tool_conf.xml.sample">
+        <code>
+         tool_conf.xml
+        </code>
+       </a>
+       file, but references your tools from the new directory. In other words a tool entry should look like this
+       <code>
+        &lt;tool file="/local_tools/application_foo/foo.xml" /&gt;
+       </code>
+       .
+Your
+       <code>
+        tool_conf.xml
+       </code>
+       should be available from inside of the container. We assume you have it stored under
+       <code>
+        /local_tools/my_tools.xml
+       </code>
+       .
+      </p>
+     </li>
+     <li>
+      <p>
+       Add the new tool config file to the Galaxy configuration.
+      </p>
+      <p>
+       To make Galaxy aware of your new tool configuration file you need to add the path to
+       <code>
+        tool_config_file
+       </code>
+       , which is set to
+       <code>
+        /etc/galaxy/tool_conf.xml
+       </code>
+       . You can do this during container start by setting the environment variable
+       <code>
+        -e GALAXY_CONFIG_TOOL_CONFIG_FILE=/etc/galaxy/tool_conf.xml,/local_tools/my_tools.xml
+       </code>
+       .
+      </p>
+     </li>
+    </ul>
+   </section>
+   <footer>
+    <p>
+     This project is maintained by
+     <a href="https://github.com/bgruening">
+      bgruening
+     </a>
+    </p>
+    <p>
+     <small>
+      Hosted on GitHub Pages — Theme by
+      <a href="https://github.com/orderedlist">
+       orderedlist
+      </a>
+     </small>
+    </p>
+   </footer>
+   <script src="js/landing_page.js">
+   </script>
+  </div>
+ </body>
+</html>
