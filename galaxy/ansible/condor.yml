@@ -2,7 +2,7 @@
   connection: local
   remote_user: root
   vars:
-    htcondor_version: 23.x
+    htcondor_version: 24.x
     htcondor_channel: current
     htcondor_role_submit: true
     htcondor_password: changeme

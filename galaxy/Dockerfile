@@ -9,13 +9,13 @@
 # * the playbooks are not cleaning anything up
 #
 
-FROM buildpack-deps:22.04 AS build_base
+FROM buildpack-deps:24.04 AS build_base
 
 ENV GALAXY_ROOT_DIR=/galaxy \
     GALAXY_VIRTUAL_ENV=/galaxy_venv \
     GALAXY_HOME=/home/galaxy \
     GALAXY_CONDA_PREFIX=/tool_deps/_conda \
-    MINIFORGE_VERSION=24.3.0-0
+    MINIFORGE_VERSION=24.9.2-0
 
 
 # Install miniforge and then virtualenv from conda
@@ -70,7 +70,7 @@ RUN cd / \
     && make -j 4 && make install
 
 
-FROM ubuntu:22.04 AS galaxy_cluster_base
+FROM ubuntu:24.04 AS galaxy_cluster_base
 
 ENV GALAXY_ROOT_DIR=/galaxy \
     GALAXY_VIRTUAL_ENV=/galaxy_venv \
@@ -117,7 +117,7 @@ RUN apt-get -qq update \
     && add-apt-repository ppa:ansible/ansible-7 \
     && apt install -y ansible \
     # Make python3 standard
-    && update-alternatives --install /usr/bin/python python /usr/bin/python3 10 \
+    && update-alternatives --install /usr/bin/python python /usr/bin/python3 12 \
     && apt purge -y software-properties-common systemd && apt-get autoremove -y && apt-get clean \
     # Install ansible roles
     && ansible-galaxy install -r /ansible/requirements.yml -p /ansible/roles \
