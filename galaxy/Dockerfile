@@ -114,7 +114,7 @@ ADD ansible/ /ansible/
 RUN apt-get -qq update \
     && apt install -y software-properties-common dirmngr gpg gpg-agent \
     && apt install -y sudo ca-certificates nano git gridengine-common gridengine-drmaa1.0 libswitch-perl \
-    && add-apt-repository ppa:ansible/ansible-7 \
+    && add-apt-repository ppa:ansible/ansible \
     && apt install -y ansible \
     # Make python3 standard
     && update-alternatives --install /usr/bin/python python /usr/bin/python3 12 \
