@@ -15,7 +15,7 @@ ENV GALAXY_ROOT_DIR=/galaxy \
     GALAXY_VIRTUAL_ENV=/galaxy_venv \
     GALAXY_HOME=/home/galaxy \
     GALAXY_CONDA_PREFIX=/tool_deps/_conda \
-    MINIFORGE_VERSION=24.3.0-0
+    MINIFORGE_VERSION=24.9.2-0
 
 
 # Install miniforge and then virtualenv from conda
@@ -39,7 +39,7 @@ RUN curl -s -L https://github.com/conda-forge/miniforge/releases/download/$MINIF
 
 FROM build_base AS build_galaxy
 
-ARG GALAXY_RELEASE=release_24.1
+ARG GALAXY_RELEASE=release_24.2
 ARG GALAXY_REPO=https://github.com/galaxyproject/galaxy
 
 ENV NODE_OPTIONS=--max-old-space-size=4096
