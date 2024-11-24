@@ -1,0 +1,11 @@
+- hosts: localhost
+  connection: local
+  remote_user: root
+  tasks:
+    - name: "Setup user configurable file source templates, also called BYOD"
+      template: src=file_source_templates.yml.j2 dest={{ galaxy_file_source_templates_config_file }} owner={{ galaxy_user_name }} group={{ galaxy_user_name }}
+
+    - name: "Copy B2Drop file source template"
+      template: src=production_b2drop.yml dest=/galaxy/lib/galaxy/files/templates/examples/production_b2drop.yml owner={{ galaxy_user_name }} group={{ galaxy_user_name }}
+      
+      

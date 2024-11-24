@@ -1,0 +1,6 @@
+- hosts: localhost
+  connection: local
+  remote_user: root
+  tasks:
+    - name: "Setup user configurable object store templates, also called BYOS"
+      template: src=object_store_templates.yml.j2 dest={{ galaxy_object_store_templates_config_file }} owner={{ galaxy_user_name }} group={{ galaxy_user_name }}
