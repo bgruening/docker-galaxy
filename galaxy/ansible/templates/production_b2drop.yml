@@ -23,5 +23,6 @@
     type: webdav
     url: 'https://b2drop.bsc.es'
     root: '/remote.php/dav/files/{{ variables.username }}'
+    login: '{{ variables.username }}'
     writable: '{{ variables.writable }}'
     password: '{{ secrets.password }}'
