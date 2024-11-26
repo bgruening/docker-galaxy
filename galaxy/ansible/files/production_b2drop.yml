@@ -18,7 +18,7 @@
     password:
       label: Password
       help: |
-        The password to use to connect to B2DROP. 
+        The password to use to connect to B2DROP.
   configuration:
     type: webdav
     url: 'https://b2drop.bsc.es'

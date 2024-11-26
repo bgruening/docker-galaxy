@@ -2,10 +2,24 @@
   connection: local
   remote_user: root
   tasks:
+    - name: Install fs.webdavfs for Galaxy's file source plugins
+      pip:
+        name: "fs.webdavfs"
+        extra_args: "--index-url https://wheels.galaxyproject.org/simple/ --extra-index-url https://pypi.python.org/simple"
+        virtualenv: "{{ galaxy_venv_dir }}"
+      environment:
+        PYTHOPATH: null
+        VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+      become_user: "{{ galaxy_user_name }}"
+
     - name: "Setup user configurable file source templates, also called BYOD"
       template: src=file_source_templates.yml.j2 dest={{ galaxy_file_source_templates_config_file }} owner={{ galaxy_user_name }} group={{ galaxy_user_name }}
 
     - name: "Copy B2Drop file source template"
-      template: src=production_b2drop.yml dest=/galaxy/lib/galaxy/files/templates/examples/production_b2drop.yml owner={{ galaxy_user_name }} group={{ galaxy_user_name }}
-      
-      
+      ansible.builtin.copy:
+        src: "./ansible/files/production_b2drop.yml"
+        dest: "/galaxy/lib/galaxy/files/templates/examples/production_b2drop.yml"
+        owner: "{{ galaxy_user_name }}"
+        group: "{{ galaxy_user_name }}"
+        mode: '0644'
+
