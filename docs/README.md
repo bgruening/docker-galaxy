@@ -1,7 +1,7 @@
 Documentation
 =============
 
-The documentation is automatically generated when the main [`README.md`](https://github.com/bgruening/docker-galaxy/blob/main/README.md) is changed on the `main` branch.
+The documentation is automatically generated when the main [`README.md`](../README.md) is changed on the `main` branch.
 
 For information, this automatic generation uses a [Python script](src/generate_docs.py) to transform the markdown in the `README.md` into the HTML files.
 This generation is automatically launched by a [GitHub Action Workflow](https://github.com/bgruening/docker-galaxy/actions/workflows/update-site.yml).
