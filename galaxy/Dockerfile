@@ -15,7 +15,7 @@ ENV GALAXY_ROOT_DIR=/galaxy \
     GALAXY_VIRTUAL_ENV=/galaxy_venv \
     GALAXY_HOME=/home/galaxy \
     GALAXY_CONDA_PREFIX=/tool_deps/_conda \
-    MINIFORGE_VERSION=24.3.0-0
+    MINIFORGE_VERSION=24.9.2-0
 
 
 # Install miniforge and then virtualenv from conda
@@ -39,7 +39,7 @@ RUN curl -s -L https://github.com/conda-forge/miniforge/releases/download/$MINIF
 
 FROM build_base AS build_galaxy
 
-ARG GALAXY_RELEASE=release_24.1
+ARG GALAXY_RELEASE=release_24.2
 ARG GALAXY_REPO=https://github.com/galaxyproject/galaxy
 
 ENV NODE_OPTIONS=--max-old-space-size=4096
@@ -191,6 +191,8 @@ ENV GALAXY_CONFIG_MANAGED_CONFIG_DIR=$EXPORT_DIR/${GALAXY_ROOT_DIR#/}/database/c
     GALAXY_CONFIG_BOOTSTRAP_ADMIN_API_KEY=HSNiugRFvgT574F43jZ7N9F3 \
     GALAXY_CONFIG_BRAND="Galaxy Docker Build" \
     GALAXY_CONFIG_STATIC_ENABLED=False \
+    GALAXY_CONFIG_FILE_SOURCE_TEMPPLATES=$GALAXY_CONFIG_DIR/file_source_templates.yml \
+    GALAXY_CONFIG_VAULT_CONFIG_FILE=$GALAXY_CONFIG_DIR/vault_conf.yml \
     GALAXY_INTERACTIVE_TOOLS_CONFIG_FILE=$GALAXY_CONFIG_DIR/tool_conf_interactive.xml \
     # The following ENV var can be used to set the number of gunicorn workers
     GUNICORN_WORKERS=2 \

@@ -1,0 +1,12 @@
+- hosts: localhost
+  connection: local
+  remote_user: root
+# You should change this key in production. You can generate Fernet keys with:
+#from cryptography.fernet import Fernet
+#Fernet.generate_key().decode('utf-8')
+  vars:
+    galaxy_vault_encryption_keys:
+      - pwiL08wXlpkBm-_Dr75aw1_uOPVA3HET1y7xrpynhKU=
+  tasks:
+    - name: "Configure Galaxy vault"
+      template: src=vault_conf.yml.j2 dest={{ galaxy_vault_config_file }} owner={{ galaxy_user_name }} group={{ galaxy_user_name }}

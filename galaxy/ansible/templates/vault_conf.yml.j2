@@ -1,0 +1,11 @@
+type: database
+path_prefix: /galaxy
+# Encryption keys must be valid fernet keys
+# To generate a valid key:
+#
+# Use the ascii string value as a key
+# For more details, see: https://cryptography.io/en/latest/fernet/#
+encryption_keys:
+{% for encryption_key in galaxy_vault_encryption_keys %}
+  - {{ encryption_key }}
+{% endfor %}
