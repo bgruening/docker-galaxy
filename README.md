@@ -709,7 +709,8 @@ these calculations on the remote cluster - but this should not be a problem
 for most Galaxy instances.
 
 # Enable Galaxy to use BioContainers (Docker) <a name="auto-exec-tools-in-docker"/> [[toc]](#toc)
-This is a very cool feature where Galaxy automatically detects that your tool has an associated docker image, pulls it and runs it for you. These images (when available) have been generated using [mulled](https://github.com/mulled). To test, install the [IUC bedtools](https://toolshed.g2.bx.psu.edu/repository?repository_id=8d84903cc667dbe7&changeset_revision=7b3aaff0d78c) from the toolshed. When you try to execute *ClusterBed* for example. You may get a missing dependancy error for *bedtools*. But bedtools has an associated docker image on [quay.io](https://quay.io/).  Now configure Galaxy as follows:
+This is a very cool feature where Galaxy automatically detects that your tool has an associated docker image, pulls it and runs it for you. These images (when available) have been generated using [mulled](https://docs.galaxyproject.org/en/latest/admin/special_topics/mulled_containers.html).
+To test, install the [IUC bedtools](https://toolshed.g2.bx.psu.edu/repository?repository_id=8d84903cc667dbe7&changeset_revision=7b3aaff0d78c) from the toolshed. When you try to execute *ClusterBed* for example. You may get a missing dependancy error for *bedtools*. But bedtools has an associated docker image on [quay.io](https://quay.io/).  Now configure Galaxy as follows:
 
 - Add this environment variable to `docker run`: `-e GALAXY_CONFIG_ENABLE_MULLED_CONTAINERS=True`
 - In `job_conf.xml` configure a Docker enabled destination as follows:
