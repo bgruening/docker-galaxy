@@ -16,6 +16,9 @@ galaxy_pbs: false
 galaxy_k8s_jobs: false
 galaxy_supervisor: true
 galaxy_job_metrics: true
+galaxy_file_source_templates: true
+galaxy_object_store_templates: true
+galaxy_vault_config: true
 galaxy_scripts: true
 galaxy_domain: "localhost"  # This is used by letsencrypt and Interactive Tools, set it to the domain name under which galaxy can be reached
 galaxy_startup: true
@@ -59,9 +62,13 @@ galaxy_k8s_jobs_pull_policy: IfNotPresent
 
 # Point at the existing Galaxy configuration.
 galaxy_server_dir: "/galaxy"
-galaxy_job_conf_path: "{{ galaxy_server_dir }}/config/job_conf.xml"
-galaxy_container_resolvers_conf_path: "{{ galaxy_server_dir }}/config/container_resolvers_conf.yml"
-galaxy_job_metrics_conf_path: "{{ galaxy_server_dir }}/config/job_metrics_conf.yml"
+galaxy_config_dir: "{{ galaxy_server_dir }}/config"
+galaxy_job_conf_path: "{{ galaxy_config_dir }}/job_conf.xml"
+galaxy_container_resolvers_conf_path: "{{ galaxy_config_dir }}/container_resolvers_conf.yml"
+galaxy_job_metrics_conf_path: "{{ galaxy_config_dir }}/job_metrics_conf.yml"
+galaxy_file_source_templates_config_file: "{{ galaxy_config_dir }}/file_source_templates.yml"
+galaxy_object_store_templates_config_file: "{{ galaxy_config_dir }}/object_store_templates.yml"
+galaxy_vault_config_file: "{{ galaxy_config_dir }}/vault_conf.yml"
 galaxy_user_name: "galaxy"
 galaxy_home_dir: "/home/{{ galaxy_user_name }}"
 galaxy_source_shellrc: false
@@ -69,7 +76,6 @@ galaxy_user_shellrc: "{{ galaxy_home_dir }}/.bashrc"
 galaxy_logs_dir: "{{ galaxy_home_dir }}/"
 galaxy_venv_dir: "{{ galaxy_home_dir }}/venv"
 
-galaxy_config_dir: "{{ galaxy_server_dir }}/config"
 galaxy_config_file: "{{ galaxy_config_dir }}/galaxy.yml"
 galaxy_toolshed_config_file: "{{ galaxy_config_dir }}/tool_shed.yml"
 galaxy_tool_data_table_config_file: "{{ galaxy_config_dir }}/tool_data_table_conf.xml"

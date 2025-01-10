@@ -70,3 +70,16 @@
 - import_playbook: galaxy_job_metrics.yml
   when: galaxy_job_metrics | bool
   tags: galaxy_job_metrics
+
+- import_playbook: galaxy_file_source_templates.yml
+  when: galaxy_file_source_templates | bool
+  tags: galaxy_file_source_templates
+
+- import_playbook: galaxy_object_store_templates.yml
+  when: galaxy_object_store_templates | bool
+  tags: galaxy_object_store_templates
+
+- import_playbook: galaxy_vault_config.yml
+  when: galaxy_vault_config | bool
+  tags: galaxy_vault_config
+
