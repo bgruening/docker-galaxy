@@ -98,7 +98,7 @@ ENV GALAXY_CONFIG_FILE=$GALAXY_CONFIG_DIR/galaxy.yml \
     PG_CONF_DIR_DEFAULT=/etc/postgresql/$PG_VERSION/main/ \
     PG_DATA_DIR_HOST=$EXPORT_DIR/postgresql/$PG_VERSION/main/
 
-ADD --chmod=755 ./common_cleanup.sh /usr/bin/common_cleanup.sh
+ADD ./common_cleanup.sh /usr/bin/common_cleanup.sh
 
 RUN echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/02apt-speedup \
     && echo "Acquire::http {No-Cache=True;};" > /etc/apt/apt.conf.d/no-cache \
@@ -106,6 +106,7 @@ RUN echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/02apt-speedup \
     && apt-get -qq update && apt-get install -y locales \
     && locale-gen en_US.UTF-8 && dpkg-reconfigure locales \
     && apt-get autoremove -y && apt-get clean \
+    && chmod 755 /usr/bin/common_cleanup.sh \
     && /usr/bin/common_cleanup.sh
 
 ADD ansible/ /ansible/
