@@ -103,7 +103,7 @@ ADD ./common_cleanup.sh /usr/bin/common_cleanup.sh
 RUN echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/02apt-speedup \
     && echo "Acquire::http {No-Cache=True;};" > /etc/apt/apt.conf.d/no-cache \
     && echo 'APT::Install-Recommends "0";' > /etc/apt/apt.conf.d/99no-install-recommends \
-    && apt-get -qq update && apt-get install -y locales \
+    && apt-get -qq update && apt-get install -y locales curl \
     && locale-gen en_US.UTF-8 && dpkg-reconfigure locales \
     && apt-get autoremove -y && apt-get clean \
     && chmod 755 /usr/bin/common_cleanup.sh \
@@ -293,9 +293,9 @@ RUN chmod +x /usr/bin/install-tools /usr/bin/install-biojs && \
 
 # use https://github.com/krallin/tini/ as tiny but valid init and PID 1
 ADD https://github.com/krallin/tini/releases/download/v0.18.0/tini /sbin/tini
-RUN chmod +x /sbin/tini
-
-ADD --chown=$GALAXY_USER:$GALAXY_USER --chmod=755 ./run.sh $GALAXY_ROOT_DIR/run.sh
+ADD --chown=$GALAXY_USER:$GALAXY_USER ./run.sh $GALAXY_ROOT_DIR/run.sh
+RUN chmod +x /sbin/tini \
+    && chmod 755 ./run.sh $GALAXY_ROOT_DIR/run.sh
 
 # This needs to happen here and not above, otherwise the Galaxy start
 # (without running the startup.sh script) will crash because integrated_tool_panel.xml could not be found.
