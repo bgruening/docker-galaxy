@@ -15,7 +15,7 @@ ENV GALAXY_ROOT_DIR=/galaxy \
     GALAXY_VIRTUAL_ENV=/galaxy_venv \
     GALAXY_HOME=/home/galaxy \
     GALAXY_CONDA_PREFIX=/tool_deps/_conda \
-    MINIFORGE_VERSION=24.9.2-0
+    MINIFORGE_VERSION=24.11.2-1
 
 
 # Install miniforge and then virtualenv from conda
