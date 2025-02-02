@@ -26,7 +26,7 @@ galaxy_rabbitmq: true
 galaxy_redis: true
 galaxy_flower: true
 galaxy_tusd: true
-galaxy_cvmfs_client: true
+galaxy_cvmfs_client: false
 galaxy_job_conf: true
 galaxy_gravity: true
 galaxy_docker: true
