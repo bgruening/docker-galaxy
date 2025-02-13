@@ -17,7 +17,7 @@
 
     - name: Install CernVM-FS client (apt)
       apt:
-        name: ['cvmfs=2.11.5~1+ubuntu22.04', 'cvmfs-config']       
+        name: ['cvmfs', 'cvmfs-config']
         state: "{{ galaxy_apt_package_state }}"
         update_cache: yes
 
