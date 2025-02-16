@@ -31,7 +31,7 @@ RUN curl -s -L https://github.com/conda-forge/miniforge/releases/download/$MINIF
     && echo "conda activate base" >> $GALAXY_HOME/.bashrc \
     && export PATH=$GALAXY_CONDA_PREFIX/bin/:$PATH \
     && conda config --add channels bioconda \
-    && conda install virtualenv pip ephemeris \
+    && conda install -y virtualenv pip ephemeris "galaxy-tool-util>=24.1" \
     && conda clean --packages -t -i \
     && cp -r ~/.conda $GALAXY_HOME && cp ~/.condarc $GALAXY_HOME \
     && find $GALAXY_CONDA_PREFIX -name '*.pyc' -delete
