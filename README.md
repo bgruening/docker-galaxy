@@ -478,15 +478,21 @@ admin_users: admin@example.org
 bootstrap_admin_api_key: HSNiugRFvgT574F43jZ7N9F3
 ```
 
-Additionally Galaxy encodes various internal values that can be part of output using secret string configurable as `id_secret` in the config file (use 5-65 bytes long string). This prevents 'guessing' of Galaxy's internal database sequences. Example:
+Additionally, Galaxy encodes various internal values that can be part of output using a secret string configurable as `id_secret` in the config file (use 5-65 bytes long string).
+This prevents 'guessing' of Galaxy's internal database sequences. Example:
 
 ```
 id_secret: d5c910cc6e32cad08599987ab64dcfae
 ```
 
-You should change all three configuration variables above manually in `/export/galaxy/config/galaxy.yml`.
+You should manually change all three configuration variables above in `/export/galaxy/config/galaxy.yml`.
 
-Alternatively you can pass the security configuration when running the image but please note that it is a security problem. E.g. if a tool exposes all `env`'s your secret API key will also be exposed.
+Alternatively, you can pass the security configuration when running the image but please note that it is a security problem.
+E.g. if a tool exposes all `env`'s your secret API key will also be exposed.
+
+In addition with 24.2 we enabled Galaxy Vault configuration. This enables users to store secrets in a user-owned password safe, called vault.
+It is highly recommended to change the pre-configured key under `$GALAXY_CONFIG_DIR/vault_conf.yml` following the instructions inside the file.
+
 
 ## Configuring Galaxy's behind a proxy <a name="Galaxy-behind-proxy" /> [[toc]](#toc)
 
