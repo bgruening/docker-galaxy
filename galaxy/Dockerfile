@@ -15,7 +15,7 @@ ENV GALAXY_ROOT_DIR=/galaxy \
     GALAXY_VIRTUAL_ENV=/galaxy_venv \
     GALAXY_HOME=/home/galaxy \
     GALAXY_CONDA_PREFIX=/tool_deps/_conda \
-    MINIFORGE_VERSION=24.3.0-0
+    MINIFORGE_VERSION=24.11.2-1
 
 
 # Install miniforge and then virtualenv from conda
@@ -31,7 +31,7 @@ RUN curl -s -L https://github.com/conda-forge/miniforge/releases/download/$MINIF
     && echo "conda activate base" >> $GALAXY_HOME/.bashrc \
     && export PATH=$GALAXY_CONDA_PREFIX/bin/:$PATH \
     && conda config --add channels bioconda \
-    && conda install virtualenv pip ephemeris \
+    && conda install -y virtualenv pip ephemeris "galaxy-tool-util>=24.1" \
     && conda clean --packages -t -i \
     && cp -r ~/.conda $GALAXY_HOME && cp ~/.condarc $GALAXY_HOME \
     && find $GALAXY_CONDA_PREFIX -name '*.pyc' -delete
@@ -39,7 +39,7 @@ RUN curl -s -L https://github.com/conda-forge/miniforge/releases/download/$MINIF
 
 FROM build_base AS build_galaxy
 
-ARG GALAXY_RELEASE=release_24.1
+ARG GALAXY_RELEASE=release_24.2
 ARG GALAXY_REPO=https://github.com/galaxyproject/galaxy
 
 ENV NODE_OPTIONS=--max-old-space-size=4096
@@ -98,14 +98,15 @@ ENV GALAXY_CONFIG_FILE=$GALAXY_CONFIG_DIR/galaxy.yml \
     PG_CONF_DIR_DEFAULT=/etc/postgresql/$PG_VERSION/main/ \
     PG_DATA_DIR_HOST=$EXPORT_DIR/postgresql/$PG_VERSION/main/
 
-ADD --chmod=755 ./common_cleanup.sh /usr/bin/common_cleanup.sh
+ADD ./common_cleanup.sh /usr/bin/common_cleanup.sh
 
 RUN echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/02apt-speedup \
     && echo "Acquire::http {No-Cache=True;};" > /etc/apt/apt.conf.d/no-cache \
     && echo 'APT::Install-Recommends "0";' > /etc/apt/apt.conf.d/99no-install-recommends \
-    && apt-get -qq update && apt-get install -y locales \
+    && apt-get -qq update && apt-get install -y locales curl \
     && locale-gen en_US.UTF-8 && dpkg-reconfigure locales \
     && apt-get autoremove -y && apt-get clean \
+    && chmod 755 /usr/bin/common_cleanup.sh \
     && /usr/bin/common_cleanup.sh
 
 ADD ansible/ /ansible/
@@ -191,6 +192,8 @@ ENV GALAXY_CONFIG_MANAGED_CONFIG_DIR=$EXPORT_DIR/${GALAXY_ROOT_DIR#/}/database/c
     GALAXY_CONFIG_BOOTSTRAP_ADMIN_API_KEY=HSNiugRFvgT574F43jZ7N9F3 \
     GALAXY_CONFIG_BRAND="Galaxy Docker Build" \
     GALAXY_CONFIG_STATIC_ENABLED=False \
+    GALAXY_CONFIG_FILE_SOURCE_TEMPPLATES=$GALAXY_CONFIG_DIR/file_source_templates.yml \
+    GALAXY_CONFIG_VAULT_CONFIG_FILE=$GALAXY_CONFIG_DIR/vault_conf.yml \
     GALAXY_INTERACTIVE_TOOLS_CONFIG_FILE=$GALAXY_CONFIG_DIR/tool_conf_interactive.xml \
     # The following ENV var can be used to set the number of gunicorn workers
     GUNICORN_WORKERS=2 \
@@ -290,9 +293,9 @@ RUN chmod +x /usr/bin/install-tools /usr/bin/install-biojs && \
 
 # use https://github.com/krallin/tini/ as tiny but valid init and PID 1
 ADD https://github.com/krallin/tini/releases/download/v0.18.0/tini /sbin/tini
-RUN chmod +x /sbin/tini
-
-ADD --chown=$GALAXY_USER:$GALAXY_USER --chmod=755 ./run.sh $GALAXY_ROOT_DIR/run.sh
+ADD --chown=$GALAXY_USER:$GALAXY_USER ./run.sh $GALAXY_ROOT_DIR/run.sh
+RUN chmod +x /sbin/tini \
+    && chmod 755 ./run.sh $GALAXY_ROOT_DIR/run.sh
 
 # This needs to happen here and not above, otherwise the Galaxy start
 # (without running the startup.sh script) will crash because integrated_tool_panel.xml could not be found.

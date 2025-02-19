@@ -1,0 +1,28 @@
+- id: b2drop
+  version: 0
+  name: B2DROP
+  description: |
+    B2DROP is a Nextcloud to sync and share your research data.
+  variables:
+    username:
+      label: Username / Account Name
+      type: string
+      help: |
+        The username or account name to use to connect to B2DROP. This is not your email address but the name show in the URL of your profile page.
+    writable:
+      label: Writable?
+      type: boolean
+      default: false
+      help: Allow Galaxy to write data to B2DROP.
+  secrets:
+    password:
+      label: Password
+      help: |
+        The password to use to connect to B2DROP.
+  configuration:
+    type: webdav
+    url: 'https://b2drop.bsc.es'
+    root: '/remote.php/dav/files/{{ variables.username }}'
+    login: '{{ variables.username }}'
+    writable: '{{ variables.writable }}'
+    password: '{{ secrets.password }}'
