@@ -16,7 +16,8 @@
     <p>
      Docker Images tracking the stable Galaxy releases
     </p>
-    <p class="bold" string="Table of content">
+    <p class="bold">
+     Table of content
     </p>
     <ul>
      <li>
@@ -937,27 +938,37 @@ file_path = /export/galaxy/database/files
 bootstrap_admin_api_key: HSNiugRFvgT574F43jZ7N9F3
 </code></pre>
     <p>
-     Additionally Galaxy encodes various internal values that can be part of output using secret string configurable as
+     Additionally, Galaxy encodes various internal values that can be part of output using a secret string configurable as
      <code>
       id_secret
      </code>
-     in the config file (use 5-65 bytes long string). This prevents 'guessing' of Galaxy's internal database sequences. Example:
+     in the config file (use 5-65 bytes long string).
+This prevents 'guessing' of Galaxy's internal database sequences. Example:
     </p>
     <pre><code>id_secret: d5c910cc6e32cad08599987ab64dcfae
 </code></pre>
     <p>
-     You should change all three configuration variables above manually in
+     You should manually change all three configuration variables above in
      <code>
       /export/galaxy/config/galaxy.yml
      </code>
      .
     </p>
     <p>
-     Alternatively you can pass the security configuration when running the image but please note that it is a security problem. E.g. if a tool exposes all
+     Alternatively, you can pass the security configuration when running the image but please note that it is a security problem.
+E.g. if a tool exposes all
      <code>
       env
      </code>
      's your secret API key will also be exposed.
+    </p>
+    <p>
+     In addition with 24.2 we enabled Galaxy Vault configuration. This enables users to store secrets in a user-owned password safe, called vault.
+It is highly recommended to change the pre-configured key under
+     <code>
+      $GALAXY_CONFIG_DIR/vault_conf.yml
+     </code>
+     following the instructions inside the file.
     </p>
     <h2>
      Configuring Galaxy's behind a proxy
