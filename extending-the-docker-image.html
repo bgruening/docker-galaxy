@@ -292,6 +292,309 @@ The RNA-workbench has advanced examples about:
      </a>
     </p>
     <h2>
+     Test matrix
+     <a name="Test-matrix">
+     </a>
+     <a href="#toc">
+      [toc]
+     </a>
+    </h2>
+    <p>
+     The project includes local test scripts and CI workflows. Use the matrix below to decide what to run.
+    </p>
+    <table>
+     <thead>
+      <tr>
+       <th>
+        Area
+       </th>
+       <th>
+        Script / Workflow
+       </th>
+       <th>
+        Requires
+       </th>
+       <th>
+        Notes
+       </th>
+      </tr>
+     </thead>
+     <tbody>
+      <tr>
+       <td>
+        Image build
+       </td>
+       <td>
+        <code>
+         docker build -t galaxy:test galaxy/
+        </code>
+       </td>
+       <td>
+        Docker
+       </td>
+       <td>
+        Baseline image build.
+       </td>
+      </tr>
+      <tr>
+       <td>
+        Startup sanity
+       </td>
+       <td>
+        <code>
+         docker run --rm --privileged galaxy:test /usr/bin/startup2
+        </code>
+       </td>
+       <td>
+        Privileged
+       </td>
+       <td>
+        Confirms services start and CVMFS messaging is sane.
+       </td>
+      </tr>
+      <tr>
+       <td>
+        Bioblend
+       </td>
+       <td>
+        <code>
+         test/bioblend/test.sh
+        </code>
+       </td>
+       <td>
+        Running Galaxy container
+       </td>
+       <td>
+        Uses a Bioblend test image against Galaxy.
+       </td>
+      </tr>
+      <tr>
+       <td>
+        Slurm
+       </td>
+       <td>
+        <code>
+         test/slurm/test.sh
+        </code>
+       </td>
+       <td>
+        Docker, Slurm test image
+       </td>
+       <td>
+        Uses external Slurm container; set
+        <code>
+         GALAXY_IMAGE=galaxy:test
+        </code>
+        if needed.
+       </td>
+      </tr>
+      <tr>
+       <td>
+        SGE (Grid Engine)
+       </td>
+       <td>
+        <code>
+         test/gridengine/test.sh
+        </code>
+       </td>
+       <td>
+        Docker, SGE test image
+       </td>
+       <td>
+        Uses ephemeris container to wait for Galaxy.
+       </td>
+      </tr>
+      <tr>
+       <td>
+        CVMFS sidecar
+       </td>
+       <td>
+        <code>
+         test/cvmfs/test.sh
+        </code>
+       </td>
+       <td>
+        Privileged
+       </td>
+       <td>
+        Builds and validates mount propagation from sidecar.
+       </td>
+      </tr>
+      <tr>
+       <td>
+        FTP/SFTP
+       </td>
+       <td>
+        <code>
+         .github/workflows/single.sh
+        </code>
+       </td>
+       <td>
+        Docker, sshpass (CI)
+       </td>
+       <td>
+        FTP and SFTP checks run in CI; local run skips SFTP if
+        <code>
+         sshpass
+        </code>
+        is missing.
+       </td>
+      </tr>
+      <tr>
+       <td>
+        /export persistence
+       </td>
+       <td>
+        <code>
+         startup.sh
+        </code>
+        /
+        <code>
+         startup2.sh
+        </code>
+       </td>
+       <td>
+        <code>
+         /export
+        </code>
+        volume
+       </td>
+       <td>
+        Export and cache relocation happens during startup; exercised by CI runs.
+       </td>
+      </tr>
+      <tr>
+       <td>
+        HTTPS/TLS
+       </td>
+       <td>
+        <code>
+         .github/workflows/single.sh
+        </code>
+       </td>
+       <td>
+        Docker
+       </td>
+       <td>
+        Uses
+        <code>
+         curl
+        </code>
+        and
+        <code>
+         openssl s_client
+        </code>
+        against port 443.
+       </td>
+      </tr>
+      <tr>
+       <td>
+        Tool install smoke
+       </td>
+       <td>
+        <code>
+         .github/workflows/single.sh
+        </code>
+       </td>
+       <td>
+        Docker
+       </td>
+       <td>
+        Installs sample tools and verifies tool availability.
+       </td>
+      </tr>
+      <tr>
+       <td>
+        Container resolvers
+       </td>
+       <td>
+        <code>
+         test/container_resolvers_conf.ci.yml
+        </code>
+       </td>
+       <td>
+        Galaxy container
+       </td>
+       <td>
+        CI uses a minimal resolver config for toolbox resolution tests.
+       </td>
+      </tr>
+      <tr>
+       <td>
+        Image analysis (optional)
+       </td>
+       <td>
+        <code>
+         .github/workflows/single.sh
+        </code>
+       </td>
+       <td>
+        <code>
+         dive
+        </code>
+       </td>
+       <td>
+        Runs only when
+        <code>
+         dive
+        </code>
+        is installed.
+       </td>
+      </tr>
+      <tr>
+       <td>
+        Single-container CI
+       </td>
+       <td>
+        <code>
+         .github/workflows/single_container.yml
+        </code>
+       </td>
+       <td>
+        CI
+       </td>
+       <td>
+        Full container test (privileged).
+       </td>
+      </tr>
+      <tr>
+       <td>
+        Multi-test CI
+       </td>
+       <td>
+        <code>
+         .github/workflows/single.sh
+        </code>
+       </td>
+       <td>
+        CI
+       </td>
+       <td>
+        Builds image + runs SLURM, SGE, Bioblend; uses buildx cache.
+       </td>
+      </tr>
+     </tbody>
+    </table>
+    <p>
+     Notes:
+    </p>
+    <ul>
+     <li>
+      If
+      <code>
+       /tmp
+      </code>
+      is small in CI, set
+      <code>
+       TMPDIR=/var/tmp
+      </code>
+      for test scripts.
+     </li>
+     <li>
+      CVMFS sidecar CI builds/pushes on tags; branch pushes run tests only when CVMFS paths change.
+     </li>
+    </ul>
+    <h2>
      List of Galaxy flavours
      <a name="List-of-Galaxy-flavours">
      </a>
