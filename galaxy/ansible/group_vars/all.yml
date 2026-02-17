@@ -99,7 +99,7 @@ galaxy_singularity_sudo: false
 galaxy_singularity_default_image: ''
 galaxy_singularity_volumes_from: ""
 # rw directories are not considered if the parent is ro
-galaxy_singularity_volumes : "$defaults"
+galaxy_singularity_volumes : "$defaults{{ ',/cvmfs:/cvmfs' if galaxy_cvmfs_client | bool else '' }}"
 
 galaxy_container_resolution: true
 container_resolution_explicit: true
