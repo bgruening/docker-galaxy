@@ -308,7 +308,6 @@ RUN mkdir -p $GALAXY_CONFIG_TUS_UPLOAD_STORE \
 # Install optional Galaxy dependencies for the default config during build.
 RUN --mount=type=cache,target=/root/.cache/uv \
     : ${GALAXY_WHEELS_INDEX_URL:="https://wheels.galaxyproject.org/simple"} \
-    : ${PYPI_INDEX_URL:="https://pypi.python.org/simple"} \
     && optional_deps_file="$(mktemp)" \
     && PYTHONPATH=$GALAXY_ROOT_DIR/lib $GALAXY_VIRTUAL_ENV/bin/python \
         -c "from galaxy.dependencies import optional; print('\n'.join(optional('/etc/galaxy/galaxy.yml')))" \
@@ -316,8 +315,8 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     && if [ -s "$optional_deps_file" ]; then \
         /usr/local/bin/uv pip install \
             --python "$GALAXY_VIRTUAL_ENV/bin/python" \
-            --index-url "${GALAXY_WHEELS_INDEX_URL}" \
-            --extra-index-url "${PYPI_INDEX_URL}" \
+            --index-strategy unsafe-best-match \
+            --extra-index-url "${GALAXY_WHEELS_INDEX_URL}" \
             -r "$optional_deps_file"; \
     fi \
     && rm -f "$optional_deps_file" \
