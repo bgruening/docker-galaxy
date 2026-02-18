@@ -112,7 +112,6 @@ container_resolution_mulled_namespace: biocontainers
 gravity_config_file: "{{ galaxy_config_dir }}/gravity.yml"
 gravity_state_dir: "{{ galaxy_server_dir }}/database/gravity"
 gravity_process_manager: "supervisor"
-gravity_manage_reports: true
 gravity_manage_celery: true
 gravity_manage_tusd: true
 gravity_manage_gx_it_proxy: true
@@ -142,12 +141,6 @@ tusd_port: "1080"
 tusd_path: "/usr/local/sbin/tusd"
 tus_upload_store_path: "/tmp/tus_upload_store"
 tusd_base_path: "{{ nginx_tusd_location }}"
-
-# Galaxy reports configuration.
-galaxy_reports: true
-galaxy_reports_config_file: "{{ galaxy_config_dir }}/reports.yml"
-galaxy_reports_port: "9001"
-galaxy_reports_url_prefix: "{{ nginx_reports_location }}"
 
 galaxy_job_metrics_core: true
 galaxy_job_metrics_env: false
@@ -179,7 +172,6 @@ nginx_conf_file: "{{ nginx_conf_dir }}/nginx.conf"
 # If all apps should be served on a common subdirectory, use nginx_prefix_location: /your_common_dir
 nginx_prefix_location: ""
 nginx_galaxy_location: "{{ nginx_prefix_location }}"
-nginx_reports_location: "{{ nginx_prefix_location }}/reports"
 nginx_rabbitmq_management_location: "{{ nginx_prefix_location }}/rabbitmq"
 nginx_flower_location: "{{ nginx_prefix_location }}/flower"
 nginx_tusd_location: "{{ nginx_prefix_location }}/api/upload/resumable_upload"
@@ -201,7 +193,6 @@ nginx_use_remote_header: true
 nginx_additional_config : []
 
 nginx_proxy_gunicorn: true
-nginx_proxy_reports: true
 nginx_proxy_rabbitmq_management: true
 nginx_proxy_flower: true
 nginx_proxy_interactive_tools: true

@@ -43,7 +43,6 @@
     nginx_extra_configs:
       - galaxy_common.conf
       - interactive_tools_common.conf
-      - reports_auth.conf
       - flower_auth.conf
       - delegated_uploads.conf
     nginx_servers:

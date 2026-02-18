@@ -32,7 +32,6 @@ It is deployed completely differently and gained many new features with many new
   - [Enabling Interactive Tools in Galaxy](#Enabling-Interactive-Tools-in-Galaxy)
   - [Using passive mode FTP or SFTP](#Using-passive-mode-FTP-or-SFTP)
   - [Using Parent docker](#Using-Parent-docker)
-  - [Galaxy Report Webapp](#Galaxy-Report-Webapp)
   - [RabbitMQ Management](#RabbitMQ-Management)
   - [Flower Webapp](#Flower-Webapp)
   - [Galaxy's config settings](#Galaxys-config-settings)
@@ -417,18 +416,6 @@ docker run -p 8080:80 -p 8021:21 \
     quay.io/bgruening/galaxy
 ```
 
-## Galaxy Report Webapp <a name="Galaxy-Report-Webapp" /> [[toc]](#toc)
-
-For admins wishing to have more information on the status of a galaxy instance, the Galaxy Report Webapp is served on `http://localhost:8080/reports`. As default this site is password protected with `admin:admin`. You can change this by providing a `common_htpasswd` file in `/home/user/galaxy_storage/`.
-
-You can disable the Report Webapp entirely by providing the environment variable `NONUSE` during container startup.
-
-```sh
-docker run -p 8080:80 \
-    -e "NONUSE=reports" \
-    quay.io/bgruening/galaxy
-```
-
 ## RabbitMQ Management <a name="RabbitMQ-Management" /> [[toc]](#toc)
 
 RabbitMQ is used as the broker for services like Celery. RabbitMQ provides a dedicated web interface for managing message queues, accessible at `http://localhost:8080/rabbitmq/`. This interface allows you to monitor queues, exchanges, bindings, and more. By default, it is password protected with `admin:admin`, but the credentials can be changed after logging in.
@@ -540,11 +527,11 @@ The Galaxy welcome screen can be changed by providing a `welcome.html` page in `
 
 ## Deactivating services <a name="Deactivating-services" /> [[toc]](#toc)
 
-Non-essential services can be deactivated during startup. Set the environment variable `NONUSE` to a comma separated list of services. Currently, `postgres`, `cron`, `proftp`, `reports`, `nodejs`, `condor`, `slurmd`, `slurmctld`, `celery`, `rabbitmq`, `redis`, `flower` and `tusd` are supported.
+Non-essential services can be deactivated during startup. Set the environment variable `NONUSE` to a comma separated list of services. Currently, `postgres`, `cron`, `proftp`, `nodejs`, `condor`, `slurmd`, `slurmctld`, `celery`, `rabbitmq`, `redis`, `flower` and `tusd` are supported.
 
 ```sh
 docker run -d -p 8080:80 -p 9002:9002 \
-    -e "NONUSE=cron,proftp,reports,nodejs,condor,slurmd,slurmctld,celery,rabbitmq,redis,flower,tusd" \
+    -e "NONUSE=cron,proftp,nodejs,condor,slurmd,slurmctld,celery,rabbitmq,redis,flower,tusd" \
     quay.io/bgruening/galaxy
 ```
 
@@ -763,7 +750,7 @@ When you execute the tool again, Galaxy will pull the image from Biocontainers (
 | `ENABLE_TTS_INSTALL`  | Enables the Test Tool Shed during container startup. This change is not persistent. (`ENABLE_TTS_INSTALL=True`)  |
 | `GALAXY_LOGGING` | Enables for verbose logging at Docker stdout. (`GALAXY_LOGGING=full`)  |
 | `BARE` | Disables all default Galaxy tools. (`BARE=True`)  |
-| `NONUSE` |  Disable services during container startup. (`NONUSE=cron,proftp,reports,nodejs,condor,slurmd,slurmctld,celery,rabbitmq,redis,flower,tusd`) |
+| `NONUSE` |  Disable services during container startup. (`NONUSE=cron,proftp,nodejs,condor,slurmd,slurmctld,celery,rabbitmq,redis,flower,tusd`) |
 | `GUNICORN_WORKERS` | Set the number of gunicorn workers (`GUNICORN_WORKERS=2`) |
 | `CELERY_WORKERS` | Set the number of celery workers (`CELERY_WORKERS=2`) |
 | `GALAXY_DOCKER_ENABLED` | Enable Galaxy to use Docker containers if annotated in tools (`GALAXY_DOCKER_ENABLED=False`) |
@@ -968,7 +955,7 @@ If you want to create new users, please make sure to use the `/export/` volume. 
 The proftpd server is configured to use the main galaxy PostgreSQL user to access the database and select the username and password. If you want to run the
 docker container in production, please do not forget to change the user credentials in `/etc/proftpd/proftpd.conf` too.
 
-The Galaxy Report and Flower Webapps are `htpasswd` protected with username and password set to `admin`.
+The Flower Webapp is `htpasswd` protected with username and password set to `admin`.
 
 RabbitMQ is configured with:
   - Admin username: `admin`

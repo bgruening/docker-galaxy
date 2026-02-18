@@ -279,7 +279,6 @@ COPY --chown=root:root --from=build_galaxy /usr/local/lib/libjemalloc.so.2 /usr/
 COPY --chown=$GALAXY_USER:$GALAXY_USER --from=build_miniforge $GALAXY_HOME $GALAXY_HOME
 COPY --chown=$GALAXY_USER:$GALAXY_USER --from=build_miniforge /etc/profile.d/conda.sh /etc/profile.d/conda.sh
 
-ADD --chown=$GALAXY_USER:$GALAXY_USER ./reports.yml.sample $GALAXY_CONFIG_DIR/reports.yml
 ADD --chown=$GALAXY_USER:$GALAXY_USER ./sample_tool_list.yaml $GALAXY_HOME/ephemeris/sample_tool_list.yaml
 
 # Activate Interactive Tools during runtime
@@ -415,7 +414,6 @@ ENV SUPERVISOR_POSTGRES_AUTOSTART=False \
     GRAVITY_MANAGE_CELERY=True \
     GRAVITY_MANAGE_GX_IT_PROXY=True \
     GRAVITY_MANAGE_TUSD=True \
-    GRAVITY_MANAGE_REPORTS=True \
     HOST_DOCKER_LEGACY= \
     STARTUP_EXPORT_USER_FILES=True \
     LOAD_GALAXY_CONDITIONAL_DEPENDENCIES=True
