@@ -307,7 +307,7 @@ RUN mkdir -p $GALAXY_CONFIG_TUS_UPLOAD_STORE \
 
 # Install optional Galaxy dependencies for the default config during build.
 RUN --mount=type=cache,target=/root/.cache/uv \
-    && optional_deps_file="$(mktemp)" \
+    optional_deps_file="$(mktemp)" \
     && PYTHONPATH=$GALAXY_ROOT_DIR/lib $GALAXY_VIRTUAL_ENV/bin/python \
         -c "from galaxy.dependencies import optional; print('\n'.join(optional('/etc/galaxy/galaxy.yml')))" \
         > "$optional_deps_file" \
