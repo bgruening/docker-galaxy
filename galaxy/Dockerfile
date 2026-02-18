@@ -43,7 +43,8 @@ ARG GALAXY_RELEASE=release_26.0
 ARG GALAXY_REPO=https://github.com/galaxyproject/galaxy
 
 ENV NODE_OPTIONS=--max-old-space-size=4096 \
-    UV_INSTALL_DIR=/usr/local/bin
+    UV_INSTALL_DIR=/usr/local/bin \
+    GALAXY_WHEELS_INDEX_URL="https://wheels.galaxyproject.org/simple"
 
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
@@ -59,7 +60,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     # Install galaxy client
     && cd $GALAXY_ROOT_DIR && NPM_CONFIG_CACHE=/root/.npm YARN_CACHE_FOLDER=/root/.cache/yarn ./scripts/common_startup.sh \
     && uv pip install --python $GALAXY_VIRTUAL_ENV/bin/python "weasyprint>=61.2" watchdog \
-    --index-url https://wheels.galaxyproject.org/simple --extra-index-url https://pypi.python.org/simple \
+    --index-strategy unsafe-best-match --extra-index-url ${GALAXY_WHEELS_INDEX_URL} \
     # cleanup
     && find config \( -name 'node_modules' -o -name '.cache' -o -name '.parcel-cache' \) -type d -prune -exec rm -rf '{}' + \
     && find $GALAXY_ROOT_DIR -name '*.pyc' -delete && find $GALAXY_VIRTUAL_ENV -name '*.pyc' -delete \ 
@@ -307,7 +308,6 @@ RUN mkdir -p $GALAXY_CONFIG_TUS_UPLOAD_STORE \
 
 # Install optional Galaxy dependencies for the default config during build.
 RUN --mount=type=cache,target=/root/.cache/uv \
-    : ${GALAXY_WHEELS_INDEX_URL:="https://wheels.galaxyproject.org/simple"} \
     && optional_deps_file="$(mktemp)" \
     && PYTHONPATH=$GALAXY_ROOT_DIR/lib $GALAXY_VIRTUAL_ENV/bin/python \
         -c "from galaxy.dependencies import optional; print('\n'.join(optional('/etc/galaxy/galaxy.yml')))" \
