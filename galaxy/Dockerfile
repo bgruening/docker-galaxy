@@ -320,7 +320,11 @@ RUN --mount=type=cache,target=/root/.cache/uv \
             -r "$optional_deps_file"; \
     fi \
     && rm -f "$optional_deps_file" \
-    && $GALAXY_ROOT_DIR/scripts/common_startup.sh --skip-client-build \ 
+    ###### This is needed because of a setuptools problem, remove in 26.1
+    && pushd "$GALAXY_ROOT_DIR" \
+    && ./scripts/common_startup.sh --skip-client-build \
+    && popd \
+    ###############################
     && chown -R $GALAXY_USER:$GALAXY_USER $GALAXY_VIRTUAL_ENV
 
 # Include all needed scripts from the host
