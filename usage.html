@@ -762,44 +762,6 @@ exit
     quay.io/bgruening/galaxy
 </code></pre>
     <h2>
-     Galaxy Report Webapp
-     <a name="Galaxy-Report-Webapp">
-     </a>
-     <a href="#toc">
-      [toc]
-     </a>
-    </h2>
-    <p>
-     For admins wishing to have more information on the status of a galaxy instance, the Galaxy Report Webapp is served on
-     <code>
-      http://localhost:8080/reports
-     </code>
-     . As default this site is password protected with
-     <code>
-      admin:admin
-     </code>
-     . You can change this by providing a
-     <code>
-      common_htpasswd
-     </code>
-     file in
-     <code>
-      /home/user/galaxy_storage/
-     </code>
-     .
-    </p>
-    <p>
-     You can disable the Report Webapp entirely by providing the environment variable
-     <code>
-      NONUSE
-     </code>
-     during container startup.
-    </p>
-    <pre><code class="language-sh">docker run -p 8080:80 \
-    -e "NONUSE=reports" \
-    quay.io/bgruening/galaxy
-</code></pre>
-    <h2>
      RabbitMQ Management
      <a name="RabbitMQ-Management">
      </a>
@@ -1125,10 +1087,6 @@ container. The CVMFS cache is persisted in
      </code>
      ,
      <code>
-      reports
-     </code>
-     ,
-     <code>
       nodejs
      </code>
      ,
@@ -1166,7 +1124,7 @@ container. The CVMFS cache is persisted in
      are supported.
     </p>
     <pre><code class="language-sh">docker run -d -p 8080:80 -p 9002:9002 \
-    -e "NONUSE=cron,proftp,reports,nodejs,condor,slurmd,slurmctld,celery,rabbitmq,redis,flower,tusd" \
+    -e "NONUSE=cron,proftp,nodejs,condor,slurmd,slurmctld,celery,rabbitmq,redis,flower,tusd" \
     quay.io/bgruening/galaxy
 </code></pre>
     <p>
