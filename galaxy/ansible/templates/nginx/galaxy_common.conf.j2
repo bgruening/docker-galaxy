@@ -3,34 +3,6 @@
         auth_basic_user_file  /etc/nginx/htpasswd;
 {% endif %}
 
-{% if nginx_proxy_reports %}
-        # enable reports under :80/reports/
-        location {{ nginx_reports_location }}/ {
-            # include authentification settings if enabled
-            include {{ nginx_conf_dir }}/reports_auth.conf;
-            proxy_pass http://127.0.0.1:{{ galaxy_reports_port }}/;
-        }
-        # serve static content for report app
-        location  {{ nginx_reports_location }}/static {
-            alias {{ galaxy_server_dir }}/static;
-            gzip on;
-            gzip_types text/plain text/xml text/javascript text/css application/x-javascript;
-            expires 24h;
-        }
-        location {{ nginx_reports_location }}/static/style {
-            alias {{ galaxy_server_dir }}/static/style;
-            gzip on;
-            gzip_types text/plain text/xml text/javascript text/css application/x-javascript;
-            expires 24h;
-        }
-        location {{ nginx_reports_location }}/static/dist {
-            alias {{ galaxy_server_dir }}/static/dist;
-            gzip on;
-            gzip_types text/plain text/xml text/javascript text/css application/x-javascript;
-            expires 24h;
-        }
-{% endif %}
-
 {% if nginx_proxy_flower %}
         # enable flower under :80/flower/
         location {{ nginx_flower_location }}/ {

@@ -33,8 +33,6 @@ then
     # TODO: Set this using GALAXY_CONFIG_INTERACTIVETOOLS_BASE_PATH after gravity config manager is updated to handle env vars properly
     ansible localhost -m replace -a "path=${GALAXY_CONFIG_FILE} regexp='^  #interactivetools_base_path:.*' replace='  interactivetools_base_path: ${PROXY_PREFIX}'" &> /dev/null
     
-    python3 /usr/local/bin/update_yaml_value "${GRAVITY_CONFIG_FILE}" "gravity.reports.url_prefix" "$PROXY_PREFIX/reports" &> /dev/null
-    
     python3 /usr/local/bin/update_yaml_value "${GRAVITY_CONFIG_FILE}" "gravity.tusd.extra_args" "-behind-proxy -base-path $PROXY_PREFIX/api/upload/resumable_upload" &> /dev/null
 
     ansible localhost -m replace -a "path=/etc/flower/flowerconfig.py regexp='^url_prefix.*' replace='url_prefix = \"$PROXY_PREFIX/flower\"'" &> /dev/null
@@ -109,14 +107,6 @@ then
         GALAXY_CONFIG_GALAXY_INFRASTRUCTURE_URL=${GALAXY_CONFIG_GALAXY_INFRASTRUCTURE_URL/http:/https:}
         export GALAXY_CONFIG_GALAXY_INFRASTRUCTURE_URL
     fi
-fi
-
-# Disable authentication of Galaxy reports
-if [[ ! -z $DISABLE_REPORTS_AUTH ]]; then
-    # disable authentification
-    echo "Disable Galaxy reports authentification "
-    cp /etc/nginx/reports_auth.conf /etc/nginx/reports_auth.conf.source 
-    echo "# No authentication defined" > /etc/nginx/reports_auth.conf
 fi
 
 # Disable authentication of flower
@@ -422,7 +412,7 @@ function wait_for_munge {
     echo "Munge is ready"
 }
 
-# $NONUSE can be set to include postgres, cron, proftp, reports, nodejs, condor, slurmd, slurmctld,
+# $NONUSE can be set to include postgres, cron, proftp, nodejs, condor, slurmd, slurmctld,
 # celery, rabbitmq, redis, flower or tusd
 # if included we will _not_ start these services.
 function start_supervisor {
@@ -568,14 +558,6 @@ function start_gravity {
         fi
     fi
 
-    if [[ ! -z $GRAVITY_MANAGE_REPORTS ]]; then
-        if [[ $NONUSE == *"reports"* ]]
-        then
-            echo "Disabling Galaxy reports webapp"
-            python3 /usr/local/bin/update_yaml_value "${GRAVITY_CONFIG_FILE}" "gravity.reports.enable" "false" &> /dev/null
-        fi
-    fi
-
     if [[ $NONUSE != *"rabbitmq"* ]]
     then
         # Set AMQP internal connection for Galaxy
@@ -599,12 +581,7 @@ fi
 
 if $PRIVILEGED; then
     # In privileged mode autofs and CVMFS may be available, so only append existing files.
-    if [[ -f /cvmfs/data.galaxyproject.org/byhand/location/tool_data_table_conf.xml ]]; then
-        export GALAXY_CONFIG_TOOL_DATA_TABLE_CONFIG_PATH="${GALAXY_CONFIG_TOOL_DATA_TABLE_CONFIG_PATH},/cvmfs/data.galaxyproject.org/byhand/location/tool_data_table_conf.xml"
-    fi
-    if [[ -f /cvmfs/data.galaxyproject.org/managed/location/tool_data_table_conf.xml ]]; then
-        export GALAXY_CONFIG_TOOL_DATA_TABLE_CONFIG_PATH="${GALAXY_CONFIG_TOOL_DATA_TABLE_CONFIG_PATH},/cvmfs/data.galaxyproject.org/managed/location/tool_data_table_conf.xml"
-    fi
+    export GALAXY_CONFIG_TOOL_DATA_TABLE_CONFIG_PATH="${GALAXY_CONFIG_TOOL_DATA_TABLE_CONFIG_PATH},/cvmfs/data.galaxyproject.org/byhand/location/tool_data_table_conf.xml,/cvmfs/data.galaxyproject.org/managed/location/tool_data_table_conf.xml"
 
     echo "Enable Galaxy Interactive Tools."
     export GALAXY_CONFIG_INTERACTIVETOOLS_ENABLE=True

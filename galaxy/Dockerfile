@@ -39,11 +39,12 @@ RUN curl -s -L https://github.com/conda-forge/miniforge/releases/download/$MINIF
 
 FROM build_base AS build_galaxy
 
-ARG GALAXY_RELEASE=release_25.1
+ARG GALAXY_RELEASE=release_26.0
 ARG GALAXY_REPO=https://github.com/galaxyproject/galaxy
 
 ENV NODE_OPTIONS=--max-old-space-size=4096 \
-    UV_INSTALL_DIR=/usr/local/bin
+    UV_INSTALL_DIR=/usr/local/bin \
+    GALAXY_WHEELS_INDEX_URL="https://wheels.galaxyproject.org/simple"
 
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
@@ -59,7 +60,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     # Install galaxy client
     && cd $GALAXY_ROOT_DIR && NPM_CONFIG_CACHE=/root/.npm YARN_CACHE_FOLDER=/root/.cache/yarn ./scripts/common_startup.sh \
     && uv pip install --python $GALAXY_VIRTUAL_ENV/bin/python "weasyprint>=61.2" watchdog \
-    --index-url https://wheels.galaxyproject.org/simple --extra-index-url https://pypi.python.org/simple \
+    --index-strategy unsafe-best-match --extra-index-url ${GALAXY_WHEELS_INDEX_URL} \
     # cleanup
     && find config \( -name 'node_modules' -o -name '.cache' -o -name '.parcel-cache' \) -type d -prune -exec rm -rf '{}' + \
     && find $GALAXY_ROOT_DIR -name '*.pyc' -delete && find $GALAXY_VIRTUAL_ENV -name '*.pyc' -delete \ 
@@ -278,7 +279,6 @@ COPY --chown=root:root --from=build_galaxy /usr/local/lib/libjemalloc.so.2 /usr/
 COPY --chown=$GALAXY_USER:$GALAXY_USER --from=build_miniforge $GALAXY_HOME $GALAXY_HOME
 COPY --chown=$GALAXY_USER:$GALAXY_USER --from=build_miniforge /etc/profile.d/conda.sh /etc/profile.d/conda.sh
 
-ADD --chown=$GALAXY_USER:$GALAXY_USER ./reports.yml.sample $GALAXY_CONFIG_DIR/reports.yml
 ADD --chown=$GALAXY_USER:$GALAXY_USER ./sample_tool_list.yaml $GALAXY_HOME/ephemeris/sample_tool_list.yaml
 
 # Activate Interactive Tools during runtime
@@ -307,20 +307,22 @@ RUN mkdir -p $GALAXY_CONFIG_TUS_UPLOAD_STORE \
 
 # Install optional Galaxy dependencies for the default config during build.
 RUN --mount=type=cache,target=/root/.cache/uv \
-    : ${GALAXY_WHEELS_INDEX_URL:="https://wheels.galaxyproject.org/simple"} \
-    : ${PYPI_INDEX_URL:="https://pypi.python.org/simple"} \
-    && optional_deps_file="$(mktemp)" \
+    optional_deps_file="$(mktemp)" \
     && PYTHONPATH=$GALAXY_ROOT_DIR/lib $GALAXY_VIRTUAL_ENV/bin/python \
         -c "from galaxy.dependencies import optional; print('\n'.join(optional('/etc/galaxy/galaxy.yml')))" \
         > "$optional_deps_file" \
     && if [ -s "$optional_deps_file" ]; then \
         /usr/local/bin/uv pip install \
             --python "$GALAXY_VIRTUAL_ENV/bin/python" \
-            --index-url "${GALAXY_WHEELS_INDEX_URL}" \
-            --extra-index-url "${PYPI_INDEX_URL}" \
+            --index-strategy unsafe-best-match \
+            --extra-index-url "${GALAXY_WHEELS_INDEX_URL}" \
             -r "$optional_deps_file"; \
     fi \
     && rm -f "$optional_deps_file" \
+    ###### This is needed because of a setuptools problem, remove in 26.1
+    && cd "$GALAXY_ROOT_DIR" \
+    && ./scripts/common_startup.sh --skip-client-build \
+    ###############################
     && chown -R $GALAXY_USER:$GALAXY_USER $GALAXY_VIRTUAL_ENV
 
 # Include all needed scripts from the host
@@ -412,7 +414,6 @@ ENV SUPERVISOR_POSTGRES_AUTOSTART=False \
     GRAVITY_MANAGE_CELERY=True \
     GRAVITY_MANAGE_GX_IT_PROXY=True \
     GRAVITY_MANAGE_TUSD=True \
-    GRAVITY_MANAGE_REPORTS=True \
     HOST_DOCKER_LEGACY= \
     STARTUP_EXPORT_USER_FILES=True \
     LOAD_GALAXY_CONDITIONAL_DEPENDENCIES=True
