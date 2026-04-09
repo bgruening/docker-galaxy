@@ -9,8 +9,8 @@
         </plugin>
 {% endif %}
 {% if galaxy_condor %}
-        <plugin id="condor" type="runner" load="galaxy.jobs.runners.condor:CondorJobRunner">
-            <param id="enabled" from_environ="GALAXY_RUNNERS_ENABLE_CONDOR">true</param>
+        <plugin id="htcondor" type="runner" load="galaxy.jobs.runners.htcondor:HTCondorJobRunner">
+            <param id="enabled" from_environ="GALAXY_RUNNERS_ENABLE_HTCONDOR">true</param>
         </plugin>
 {% endif %}
 {% if galaxy_pbs %}
@@ -88,16 +88,16 @@
 
 {% endif %}
 {% if galaxy_condor %}
-        {% call macros.destination("condor_cluster", "condor") %}
+        {% call macros.destination("condor_cluster", "htcondor") %}
             <param id="universe" from_environ="GALAXY_CONDOR_UNIVERSE">vanilla</param>
         {% endcall %}
-        {% call macros.destination("condor_cluster_docker", "condor", container_type="docker") %}
+        {% call macros.destination("condor_cluster_docker", "htcondor", container_type="docker") %}
             <param id="universe" from_environ="GALAXY_CONDOR_UNIVERSE">vanilla</param>
         {% endcall %}
-        {% call macros.destination("condor_cluster_force_docker", "condor", container_type="docker", force_container=True) %}
+        {% call macros.destination("condor_cluster_force_docker", "htcondor", container_type="docker", force_container=True) %}
             <param id="universe" from_environ="GALAXY_CONDOR_UNIVERSE">vanilla</param>
         {% endcall %}
-        {% call macros.destination("condor_docker_universe", "condor", container_type="docker", force_container=True) %}
+        {% call macros.destination("condor_docker_universe", "htcondor", container_type="docker", force_container=True) %}
             <param id="universe" from_environ="GALAXY_CONDOR_UNIVERSE">docker</param>
         {% endcall %}
         <!-- Following destinations send to basic Condor runner if no Docker image is available

@@ -24,7 +24,7 @@ roles:
     src: https://github.com/galaxyproject/ansible-role-tusd
     version: e009b498a7989d8002c6a5d104176295d63e9fae
   - name: galaxyproject.nginx
-    version: 1.0.0
+    version: 1.0.2
   - name: usegalaxy_eu.certbot
     version: 0.1.13
   - name: galaxyproject.self_signed_certs
