@@ -21,9 +21,16 @@ ENV GALAXY_ROOT_DIR=/galaxy \
 # Install miniforge and then virtualenv from conda
 FROM build_base AS build_miniforge
 
+ARG TARGETARCH=amd64
+
 ADD ./bashrc $GALAXY_HOME/.bashrc
 
-RUN curl -s -L https://github.com/conda-forge/miniforge/releases/download/$MINIFORGE_VERSION/Miniforge3-$MINIFORGE_VERSION-Linux-x86_64.sh > ~/miniforge.sh \
+RUN case "$TARGETARCH" in \
+        amd64) miniforge_arch=x86_64 ;; \
+        arm64) miniforge_arch=aarch64 ;; \
+        *) echo "Unsupported TARGETARCH: $TARGETARCH" >&2; exit 1 ;; \
+    esac \
+    && curl -s -L "https://github.com/conda-forge/miniforge/releases/download/$MINIFORGE_VERSION/Miniforge3-$MINIFORGE_VERSION-Linux-${miniforge_arch}.sh" > ~/miniforge.sh \
     && /bin/bash ~/miniforge.sh -b -p $GALAXY_CONDA_PREFIX/ \
     && rm ~/miniforge.sh \
     && ln -s $GALAXY_CONDA_PREFIX/etc/profile.d/conda.sh /etc/profile.d/conda.sh \
@@ -234,6 +241,8 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 FROM galaxy_cluster_base AS final
 
+ARG TARGETARCH=amd64
+
 LABEL maintainer="Björn A. Grüning <bjoern.gruening@gmail.com>"
 
 ENV GALAXY_CONFIG_MANAGED_CONFIG_DIR=$EXPORT_DIR/${GALAXY_ROOT_DIR#/}/database/config \
@@ -302,8 +311,13 @@ RUN mkdir -p $GALAXY_CONFIG_TUS_UPLOAD_STORE \
     -L https://raw.githubusercontent.com/galaxyproject/usegalaxy-playbook/8adb1f82c94fe95b09df2a2816440ce2420b7d39/env/main/files/galaxy/config/tool_data_table_conf.xml \
     && chown $GALAXY_USER:$GALAXY_USER $GALAXY_CONFIG_TOOL_DATA_TABLE_CONFIG_PATH \
     # Ensure Galaxy uses the jemalloc we built (gridengine compatibility: #10425).
-    && mv /usr/lib/x86_64-linux-gnu/libjemalloc.so.2 /usr/lib/x86_64-linux-gnu/libjemalloc.so.2.orig \
-    && ln -s /usr/local/lib/libjemalloc.so.2 /usr/lib/x86_64-linux-gnu/libjemalloc.so.2
+    && case "$TARGETARCH" in \
+        amd64) deb_multiarch=x86_64-linux-gnu ;; \
+        arm64) deb_multiarch=aarch64-linux-gnu ;; \
+        *) echo "Unsupported TARGETARCH: $TARGETARCH" >&2; exit 1 ;; \
+    esac \
+    && mv "/usr/lib/${deb_multiarch}/libjemalloc.so.2" "/usr/lib/${deb_multiarch}/libjemalloc.so.2.orig" \
+    && ln -s /usr/local/lib/libjemalloc.so.2 "/usr/lib/${deb_multiarch}/libjemalloc.so.2"
 
 # Install optional Galaxy dependencies for the default config during build.
 RUN --mount=type=cache,target=/root/.cache/uv \
@@ -381,7 +395,12 @@ RUN chmod +x /usr/bin/install-tools && \
     chmod +x galaxy-dir-sync.py
 
 # use https://github.com/krallin/tini/ as tiny but valid init and PID 1
-ADD https://github.com/krallin/tini/releases/download/v0.18.0/tini /sbin/tini
+RUN case "$TARGETARCH" in \
+        amd64) tini_arch=amd64 ;; \
+        arm64) tini_arch=arm64 ;; \
+        *) echo "Unsupported TARGETARCH: $TARGETARCH" >&2; exit 1 ;; \
+    esac \
+    && curl -fsSL "https://github.com/krallin/tini/releases/download/v0.18.0/tini-${tini_arch}" -o /sbin/tini
 ADD --chown=$GALAXY_USER:$GALAXY_USER ./run.sh $GALAXY_ROOT_DIR/run.sh
 RUN chmod +x /sbin/tini \
     && chmod 755 ./run.sh $GALAXY_ROOT_DIR/run.sh
