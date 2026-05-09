@@ -1,0 +1,39 @@
+name: Galaxy ARM64 Container Build
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "galaxy/**"
+      - ".github/workflows/galaxy-arm64.yml"
+
+jobs:
+  build-arm64:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Configure Docker data-root
+        run: |
+          sudo mkdir -p /mnt/docker
+          if [ ! -f /etc/docker/daemon.json ]; then
+            echo '{}' | sudo tee /etc/docker/daemon.json
+          fi
+          sudo jq '."data-root"="/mnt/docker"' /etc/docker/daemon.json > /tmp/docker_daemon.json
+          sudo mv /tmp/docker_daemon.json /etc/docker/daemon.json
+          sudo systemctl daemon-reload
+          sudo systemctl restart docker
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build ARM64 Galaxy image
+        uses: docker/build-push-action@v6
+        with:
+          context: "{{defaultContext}}:galaxy"
+          platforms: linux/arm64
+          load: true
+          tags: quay.io/bgruening/galaxy:ci-arm64
+          cache-from: type=gha,scope=galaxy-arm64
+          cache-to: type=gha,mode=max,scope=galaxy-arm64
