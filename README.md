@@ -761,6 +761,19 @@ When you execute the tool again, Galaxy will pull the image from Biocontainers (
 | `GALAXY_AUTO_UPDATE_DB` | Run the Galaxy database migration script during startup |
 | `GALAXY_EXPORT_MARKER` | Override the export marker used to refresh `/export/galaxy`. |
 
+## Galaxy AI and integration features
+
+Galaxy AI and integration features such as ChatGXY, JupyterLite AI assistance, Vintent, and the experimental MCP server remain disabled unless you opt in through Galaxy configuration environment variables. At minimum, AI-backed features require an OpenAI-compatible provider and should be configured explicitly:
+
+| Name   | Description   |
+|---|---|
+| `GALAXY_CONFIG_AI_API_KEY` | API key for the configured AI provider. Required before enabling AI-backed Galaxy features. |
+| `GALAXY_CONFIG_AI_API_BASE_URL` | Optional OpenAI-compatible API base URL for non-default providers. |
+| `GALAXY_CONFIG_AI_MODEL` | Optional global fallback model, for example `gpt-4o-mini`. |
+| `GALAXY_CONFIG_INFERENCE_SERVICES` | Optional structured configuration for per-agent or per-plugin AI settings, including JupyterLite. |
+| `GALAXY_CONFIG_ENABLE_MCP_SERVER` | Enables Galaxy's experimental MCP endpoint. Keep disabled unless API-key authenticated access is intended. |
+| `GALAXY_CONFIG_URL_HEADERS_CONFIG_FILE` | Optional URL header allow-list config. The Galaxy sample is intentionally not enabled by default because it controls which user-supplied headers may be sent to external URLs. |
+
 
 # HTTPS Support <a name="HTTPS-Support"/> [[toc]](#toc)
 
