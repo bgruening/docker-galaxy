@@ -39,7 +39,7 @@ RUN curl -s -L https://github.com/conda-forge/miniforge/releases/download/$MINIF
 
 FROM build_base AS build_galaxy
 
-ARG GALAXY_RELEASE=release_26.0
+ARG GALAXY_RELEASE=dev
 ARG GALAXY_REPO=https://github.com/galaxyproject/galaxy
 
 ENV NODE_OPTIONS=--max-old-space-size=4096 \
@@ -54,7 +54,8 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=cache,target=/root/.npm \
     --mount=type=cache,target=/root/.cache/yarn \
     mkdir $GALAXY_ROOT_DIR $GALAXY_VIRTUAL_ENV \
-    # download latest stable release of Galaxy.
+    # Download Galaxy. GALAXY_RELEASE can be overridden with a stable release
+    # branch or custom ref.
     && curl -L -s $GALAXY_REPO/archive/$GALAXY_RELEASE.tar.gz | tar xzf - --strip-components=1 -C $GALAXY_ROOT_DIR \
     && uv venv --seed $GALAXY_VIRTUAL_ENV \
     # Install galaxy client
@@ -255,7 +256,7 @@ ENV GALAXY_CONFIG_MANAGED_CONFIG_DIR=$EXPORT_DIR/${GALAXY_ROOT_DIR#/}/database/c
     GALAXY_CONFIG_BOOTSTRAP_ADMIN_API_KEY=HSNiugRFvgT574F43jZ7N9F3 \
     GALAXY_CONFIG_BRAND="Galaxy Docker Build" \
     GALAXY_CONFIG_STATIC_ENABLED=False \
-    GALAXY_CONFIG_FILE_SOURCE_TEMPPLATES=$GALAXY_CONFIG_DIR/file_source_templates.yml \
+    GALAXY_CONFIG_FILE_SOURCE_TEMPLATES_CONFIG_FILE=$GALAXY_CONFIG_DIR/file_source_templates.yml \
     GALAXY_CONFIG_VAULT_CONFIG_FILE=$GALAXY_CONFIG_DIR/vault_conf.yml \
     GALAXY_INTERACTIVE_TOOLS_CONFIG_FILE=$GALAXY_CONFIG_DIR/tool_conf_interactive.xml \
     # The following ENV var can be used to set the number of gunicorn workers
