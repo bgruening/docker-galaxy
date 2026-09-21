@@ -377,9 +377,8 @@ ADD --chown=$GALAXY_USER:$GALAXY_USER ./tool_sheds_conf.xml $GALAXY_HOME/tool_sh
 
 # Script that enables easier downstream installation of tools (e.g. for different Galaxy Docker flavours)
 ADD install_tools_wrapper.sh /usr/bin/install-tools
-RUN chmod +x /usr/bin/install-tools && \
-    cd /usr/bin/ && curl https://git.embl.de/grp-gbcs/galaxy-dir-sync/raw/master/src/galaxy-dir-sync.py > galaxy-dir-sync.py && \
-    chmod +x galaxy-dir-sync.py
+COPY galaxy-dir-sync.py /usr/bin/galaxy-dir-sync.py
+RUN chmod +x /usr/bin/install-tools /usr/bin/galaxy-dir-sync.py
 
 # use https://github.com/krallin/tini/ as tiny but valid init and PID 1
 ADD https://github.com/krallin/tini/releases/download/v0.18.0/tini /sbin/tini
