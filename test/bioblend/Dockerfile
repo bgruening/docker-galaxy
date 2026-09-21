@@ -1,11 +1,11 @@
 FROM alpine:3.17 as build
 
-ENV BIOBLEND_VERSION=1.7.0 \
+ENV BIOBLEND_VERSION=1.9.0 \
     TOX_ENV=py310 \
     BIOBLEND_GALAXY_API_KEY=fakekey \
     BIOBLEND_GALAXY_URL=http://galaxy \
     BIOBLEND_TEST_JOB_TIMEOUT="240" \
-    GALAXY_VERSION=release_25.1 \
+    GALAXY_VERSION=release_26.1 \
     UV_INSTALL_DIR=/usr/local/bin
 
 ADD "https://github.com/galaxyproject/bioblend/archive/v$BIOBLEND_VERSION.zip" /src/bioblend.zip
