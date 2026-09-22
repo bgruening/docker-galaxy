@@ -33,23 +33,30 @@
         state: present
         update_cache: true
 
+    - name: Get Debian architecture
+      command: dpkg --print-architecture
+      register: rabbitmq_deb_arch
+      changed_when: false
+
     - name: Add RabbitMQ signing key
+      when: rabbitmq_deb_arch.stdout == "amd64"
       shell: |
         curl -1sLf "https://keys.openpgp.org/vks/v1/by-fingerprint/0A9AF2115F4687BD29803A206B73A36E6026DFCA" | gpg --dearmor -o {{ rabbitmq_keyring_path }}
       args:
         creates: "{{ rabbitmq_keyring_path }}"
 
     - name: Configure RabbitMQ apt repositories
+      when: rabbitmq_deb_arch.stdout == "amd64"
       copy:
         dest: "{{ rabbitmq_repo_list_path }}"
         content: |
           ## Modern Erlang/OTP releases
-          deb [arch=amd64 signed-by={{ rabbitmq_keyring_path }}] https://deb1.rabbitmq.com/rabbitmq-erlang/ubuntu/noble noble main
-          deb [arch=amd64 signed-by={{ rabbitmq_keyring_path }}] https://deb2.rabbitmq.com/rabbitmq-erlang/ubuntu/noble noble main
+          deb [arch={{ rabbitmq_deb_arch.stdout }} signed-by={{ rabbitmq_keyring_path }}] https://deb1.rabbitmq.com/rabbitmq-erlang/ubuntu/noble noble main
+          deb [arch={{ rabbitmq_deb_arch.stdout }} signed-by={{ rabbitmq_keyring_path }}] https://deb2.rabbitmq.com/rabbitmq-erlang/ubuntu/noble noble main
 
           ## Latest RabbitMQ releases
-          deb [arch=amd64 signed-by={{ rabbitmq_keyring_path }}] https://deb1.rabbitmq.com/rabbitmq-server/ubuntu/noble noble main
-          deb [arch=amd64 signed-by={{ rabbitmq_keyring_path }}] https://deb2.rabbitmq.com/rabbitmq-server/ubuntu/noble noble main
+          deb [arch={{ rabbitmq_deb_arch.stdout }} signed-by={{ rabbitmq_keyring_path }}] https://deb1.rabbitmq.com/rabbitmq-server/ubuntu/noble noble main
+          deb [arch={{ rabbitmq_deb_arch.stdout }} signed-by={{ rabbitmq_keyring_path }}] https://deb2.rabbitmq.com/rabbitmq-server/ubuntu/noble noble main
 
     - name: Install Erlang packages
       apt:
@@ -57,9 +64,17 @@
         state: present
         update_cache: true
 
-    - name: Install RabbitMQ server
+    - name: Install RabbitMQ server from Team RabbitMQ repository
+      when: rabbitmq_deb_arch.stdout == "amd64"
       apt:
         name: "rabbitmq-server={{ rabbitmq_version }}"
+        state: present
+        update_cache: true
+
+    - name: Install RabbitMQ server from Ubuntu repository
+      when: rabbitmq_deb_arch.stdout != "amd64"
+      apt:
+        name: rabbitmq-server
         state: present
         update_cache: true
 

@@ -16,7 +16,10 @@
       proxy_buffer_size: 16k
       underscores_in_headers: "on"
       keepalive_timeout: 600
-      proxy_read_timeout: 300
+      # Tool Shed installs are synchronous and can legitimately take longer
+      # than five minutes when the remote shed or dependency resolution is
+      # slow. Keep nginx from terminating an otherwise healthy installation.
+      proxy_read_timeout: 900
       server_names_hash_bucket_size: 128
       # gzip: "on" # This is enabled by default in Ubuntu, and the duplicate directive will cause a crash.
       gzip_proxied: "any"
