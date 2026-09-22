@@ -5,9 +5,8 @@ GALAXY_SMOKE_IMAGE=${GALAXY_SMOKE_IMAGE:-quay.io/bgruening/galaxy:ci}
 GALAXY_SMOKE_CONTAINER=${GALAXY_SMOKE_CONTAINER:-galaxy-smoke}
 GALAXY_SMOKE_PORT=${GALAXY_SMOKE_PORT:-8080}
 GALAXY_SMOKE_TIMEOUT=${GALAXY_SMOKE_TIMEOUT:-600}
-GALAXY_SMOKE_INTERVAL=${GALAXY_SMOKE_INTERVAL:-15}
 GALAXY_SMOKE_EXPECTED_ARCH=${GALAXY_SMOKE_EXPECTED_ARCH:-}
-GALAXY_SMOKE_URL="http://127.0.0.1:${GALAXY_SMOKE_PORT}/api/version"
+GALAXY_SMOKE_URL="http://127.0.0.1:${GALAXY_SMOKE_PORT}"
 
 cleanup() {
     status=$?
@@ -30,19 +29,14 @@ docker run -d \
     -p "${GALAXY_SMOKE_PORT}:80" \
     "$GALAXY_SMOKE_IMAGE"
 
-deadline=$((SECONDS + GALAXY_SMOKE_TIMEOUT))
-while ! curl --fail --silent --show-error "$GALAXY_SMOKE_URL"; do
-    if [[ "$(docker inspect --format '{{.State.Running}}' "$GALAXY_SMOKE_CONTAINER")" != "true" ]]; then
-        echo "Galaxy container stopped before becoming ready."
-        exit 1
-    fi
-    if ((SECONDS >= deadline)); then
-        echo "Galaxy did not become ready within ${GALAXY_SMOKE_TIMEOUT} seconds."
-        exit 1
-    fi
-    sleep "$GALAXY_SMOKE_INTERVAL"
-done
-echo
+if ! docker exec "$GALAXY_SMOKE_CONTAINER" \
+    /tool_deps/_conda/bin/galaxy-wait \
+    -g http://127.0.0.1 \
+    -v \
+    --timeout "$GALAXY_SMOKE_TIMEOUT"; then
+    echo "Galaxy did not become ready within ${GALAXY_SMOKE_TIMEOUT} seconds."
+    exit 1
+fi
 
 if [[ -n "$GALAXY_SMOKE_EXPECTED_ARCH" ]]; then
     actual_arch=$(docker exec "$GALAXY_SMOKE_CONTAINER" uname -m)
