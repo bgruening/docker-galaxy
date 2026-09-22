@@ -1,6 +1,58 @@
 #!/bin/bash
 set -ex
 
+failure_diagnostics() {
+    exit_code=$?
+    trap - EXIT
+
+    if [[ $exit_code -eq 0 ]]; then
+        exit 0
+    fi
+
+    set +e
+    set +x
+    echo "Single-container test failed with exit code ${exit_code}."
+
+    echo "::group::Host and Docker resources"
+    df -h
+    docker system df
+    docker ps -a
+    echo "::endgroup::"
+
+    if docker inspect galaxy >/dev/null 2>&1; then
+        echo "::group::Galaxy container state"
+        docker inspect --format '{{json .State}}' galaxy
+        docker stats --no-stream galaxy
+        echo "::endgroup::"
+
+        echo "::group::Galaxy container logs"
+        docker logs --tail 1000 galaxy
+        echo "::endgroup::"
+
+        echo "::group::Galaxy service status"
+        docker exec galaxy supervisorctl status
+        echo "::endgroup::"
+
+        echo "::group::Galaxy service logs"
+        docker exec galaxy bash -c '
+            for log_file in \
+                /home/galaxy/logs/*.log \
+                /var/log/nginx/*.log \
+                /var/log/supervisor/*.log; do
+                if [[ -f "$log_file" ]]; then
+                    echo "===== $log_file ====="
+                    tail -n 200 "$log_file"
+                fi
+            done
+        '
+        echo "::endgroup::"
+    fi
+
+    exit "$exit_code"
+}
+
+trap failure_diagnostics EXIT
+
 docker --version
 docker info
 
