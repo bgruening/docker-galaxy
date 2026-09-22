@@ -6,6 +6,7 @@ on:
     paths:
       - "galaxy/**"
       - ".github/workflows/galaxy-arm64.yml"
+      - "test/smoke.sh"
 
 jobs:
   build-arm64:
@@ -37,3 +38,9 @@ jobs:
           tags: quay.io/bgruening/galaxy:ci-arm64
           cache-from: type=gha,scope=galaxy-arm64
           cache-to: type=gha,mode=max,scope=galaxy-arm64
+
+      - name: Boot and smoke-test ARM64 Galaxy image
+        run: test/smoke.sh
+        env:
+          GALAXY_SMOKE_IMAGE: quay.io/bgruening/galaxy:ci-arm64
+          GALAXY_SMOKE_EXPECTED_ARCH: aarch64
