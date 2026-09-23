@@ -68,7 +68,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     && uv venv --seed $GALAXY_VIRTUAL_ENV \
     # Install galaxy client
     && cd $GALAXY_ROOT_DIR && NPM_CONFIG_CACHE=/root/.npm YARN_CACHE_FOLDER=/root/.cache/yarn ./scripts/common_startup.sh \
-    && uv pip install --python $GALAXY_VIRTUAL_ENV/bin/python "weasyprint>=61.2" watchdog \
+    && uv pip install --python $GALAXY_VIRTUAL_ENV/bin/python "weasyprint>=61.2" watchdog htcondor \
     --index-strategy unsafe-best-match --extra-index-url ${GALAXY_WHEELS_INDEX_URL} \
     # cleanup
     && find config \( -name 'node_modules' -o -name '.cache' -o -name '.parcel-cache' \) -type d -prune -exec rm -rf '{}' + \
@@ -260,7 +260,7 @@ ENV GALAXY_CONFIG_MANAGED_CONFIG_DIR=$EXPORT_DIR/${GALAXY_ROOT_DIR#/}/database/c
     GALAXY_DEFAULT_ADMIN_KEY=fakekey \
     GALAXY_DESTINATIONS_DEFAULT=slurm_cluster \
     GALAXY_RUNNERS_ENABLE_SLURM=True \
-    GALAXY_RUNNERS_ENABLE_CONDOR=False \
+    GALAXY_RUNNERS_ENABLE_HTCONDOR=False \
     GALAXY_CONFIG_DATABASE_CONNECTION=postgresql://galaxy:galaxy@localhost:5432/galaxy?client_encoding=utf8 \
     GALAXY_CONFIG_ADMIN_USERS=admin@example.org \
     GALAXY_CONFIG_BOOTSTRAP_ADMIN_API_KEY=HSNiugRFvgT574F43jZ7N9F3 \
