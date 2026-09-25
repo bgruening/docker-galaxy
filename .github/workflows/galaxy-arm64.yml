@@ -7,6 +7,7 @@ on:
       - "galaxy/**"
       - ".github/workflows/galaxy-arm64.yml"
       - "test/smoke.sh"
+      - "test/cvmfs/test-userspace.sh"
 
 jobs:
   build-arm64:
@@ -44,3 +45,8 @@ jobs:
         env:
           GALAXY_SMOKE_IMAGE: quay.io/bgruening/galaxy:ci-arm64
           GALAXY_SMOKE_EXPECTED_ARCH: aarch64
+
+      - name: Test userspace CVMFS on ARM64
+        run: test/cvmfs/test-userspace.sh
+        env:
+          GALAXY_CVMFS_TEST_IMAGE: quay.io/bgruening/galaxy:ci-arm64

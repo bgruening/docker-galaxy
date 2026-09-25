@@ -508,12 +508,63 @@ This is achieved by connecting to Galaxy's CernVM filesystem (CVMFS) at `cvmfs-c
 The CVMFS capability doesn't add to the size of the Docker image, but when running, CVMFS maintains
 a cache to keep the most recently used data on the local disk.
 
-*Note*: for CVMFS directories to be mounted-on-demand with `autofs`, you must launch Docker as `--privileged`.
-If privileged mode is not an option, use the optional CVMFS sidecar in `galaxy/docker-compose.yaml`:
+### Userspace CVMFS (recommended)
+
+The image can mount CVMFS without `--privileged` and without a sidecar. It needs the FUSE device and
+two narrowly scoped security options:
+
+```sh
+docker run --rm -p 8080:80 \
+    --device /dev/fuse \
+    --security-opt seccomp=unconfined \
+    --security-opt systempaths=unconfined \
+    -e CVMFS_MODE=userspace \
+    -v galaxy-storage:/export \
+    quay.io/bgruening/galaxy
+```
+
+The on-demand cache is stored in `/export/cvmfs-cache` by default, so `/export` should use fast local
+storage. Do not share one cache directory between concurrently running containers.
+
+To verify the same reference-data and tool-container paths exercised by CI, replace the default command:
+
+```sh
+docker run --rm \
+    --device /dev/fuse \
+    --security-opt seccomp=unconfined \
+    --security-opt systempaths=unconfined \
+    -e CVMFS_MODE=userspace \
+    quay.io/bgruening/galaxy \
+    bash -c 'test -d /cvmfs/data.galaxyproject.org/byhand && test -d /cvmfs/singularity.galaxyproject.org/all'
+```
+
+Userspace mounts live in the entrypoint's mount namespace and are inherited by Galaxy and the jobs it
+launches. A separate `docker exec` process cannot browse those mounts directly.
+
+### CVMFS modes
+
+Set `CVMFS_MODE` to select the runtime behavior:
+
+| Mode | Behavior |
+| --- | --- |
+| `auto` | Uses an existing external mount, preserves the privileged native path, or selects userspace CVMFS when its prerequisites are available. |
+| `userspace` | Requires the FUSE/security options above and fails with an actionable error if they are missing. |
+| `system` | Uses the image's native privileged/autofs setup. |
+| `external` | Waits for repositories mounted by the Compose sidecar or host. |
+| `disabled` | Starts Galaxy without CVMFS reference data. |
+
+The default repositories are `data.galaxyproject.org` and `singularity.galaxyproject.org`. Override them
+with comma-separated `CVMFS_REPOSITORIES`. `CVMFS_CACHE_BASE`, `CVMFS_QUOTA_LIMIT`, and
+`CVMFS_EXTERNAL_WAIT` configure the cache path, cache quota in MB, and external-mount wait in seconds.
+
+### Privileged and sidecar compatibility modes
+
+Launching with `--privileged` keeps the existing native CVMFS/autofs behavior. Where FUSE cannot be
+exposed to the Galaxy container, the optional sidecar in `galaxy/docker-compose.yaml` remains available:
 
 ```sh
 cd galaxy
-CVMFS_MOUNT_DIR=/cvmfs EXPORT_DIR=./export docker compose --profile cvmfs up
+CVMFS_MODE=external CVMFS_MOUNT_DIR=/cvmfs EXPORT_DIR=./export docker compose --profile cvmfs up
 ```
 
 This starts a dedicated CVMFS container that mounts the repositories and shares `/cvmfs` with the Galaxy
@@ -899,7 +950,7 @@ The project includes local test scripts and CI workflows. Use the matrix below t
 | Bioblend | `test/bioblend/test.sh` | Running Galaxy container | Uses a Bioblend test image against Galaxy. |
 | Slurm | `test/slurm/test.sh` | Docker, Slurm test image | Uses external Slurm container; set `GALAXY_IMAGE=galaxy:test` if needed. |
 | SGE (Grid Engine) | `test/gridengine/test.sh` | Docker, SGE test image | Uses ephemeris container to wait for Galaxy. |
-| CVMFS sidecar | `test/cvmfs/test.sh` | Privileged | Builds and validates mount propagation from sidecar. |
+| CVMFS userspace + sidecar | `test/cvmfs/test.sh` | `/dev/fuse` security options; privileged sidecar fallback | Validates userspace mounts on amd64/arm64 and sidecar mount propagation. |
 | FTP/SFTP | `.github/workflows/single.sh` | Docker, sshpass (CI) | FTP and SFTP checks run in CI; local run skips SFTP if `sshpass` is missing. |
 | /export persistence | `startup.sh` / `startup2.sh` | `/export` volume | Export and cache relocation happens during startup; exercised by CI runs. |
 | HTTPS/TLS | `.github/workflows/single.sh` | Docker | Uses `curl` and `openssl s_client` against port 443. |

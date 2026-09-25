@@ -126,6 +126,22 @@ RUN apt-get -qq update \
     && cp -a /usr/local/lib/libdrmaa.so* /out/ \
     && rm -rf /var/lib/apt/lists/* /tmp/slurm-drmaa
 
+
+# Build a self-contained CVMFS userspace client. The runtime image still keeps
+# the native CVMFS client for privileged/autofs installations.
+FROM ubuntu:24.04 AS build_cvmfsexec
+
+ARG CVMFSEXEC_VERSION=4.54
+ARG CVMFS_USERSPACE_VERSION=2.14.1
+
+RUN apt-get -qq update \
+    && apt-get install -y --no-install-recommends ca-certificates cpio curl git rpm2cpio \
+    && git clone --branch "v${CVMFSEXEC_VERSION}" --depth 1 \
+        https://github.com/cvmfs/cvmfsexec.git /opt/cvmfsexec \
+    && cd /opt/cvmfsexec \
+    && ./makedist -v "$CVMFS_USERSPACE_VERSION" none \
+    && rm -rf .git /var/lib/apt/lists/*
+
 FROM ubuntu:24.04 AS galaxy_cluster_base
 
 ENV GALAXY_ROOT_DIR=/galaxy \
@@ -289,6 +305,12 @@ COPY --chown=$GALAXY_USER:$GALAXY_USER --from=build_galaxy $GALAXY_VIRTUAL_ENV $
 COPY --chown=root:root --from=build_galaxy /usr/local/lib/libjemalloc.so.2 /usr/local/lib/libjemalloc.so.2
 COPY --chown=$GALAXY_USER:$GALAXY_USER --from=build_miniforge $GALAXY_HOME $GALAXY_HOME
 COPY --chown=$GALAXY_USER:$GALAXY_USER --from=build_miniforge /etc/profile.d/conda.sh /etc/profile.d/conda.sh
+COPY --from=build_cvmfsexec /opt/cvmfsexec /opt/cvmfsexec
+
+# Reuse the Galaxy CVMFS repository configuration and keys with the bundled
+# userspace client. Cache settings are applied by cvmfs-entrypoint at runtime.
+RUN rm -rf /opt/cvmfsexec/dist/etc/cvmfs \
+    && cp -a /etc/cvmfs /opt/cvmfsexec/dist/etc/cvmfs
 
 ADD --chown=$GALAXY_USER:$GALAXY_USER ./sample_tool_list.yaml $GALAXY_HOME/ephemeris/sample_tool_list.yaml
 
@@ -424,6 +446,7 @@ VOLUME ["/export/", "/data/", "/var/lib/docker"]
 
 ADD startup.sh /usr/bin/startup
 ADD startup2.sh /usr/bin/startup2
+ADD cvmfs-entrypoint.sh /usr/bin/cvmfs-entrypoint
 ENV SUPERVISOR_POSTGRES_AUTOSTART=False \
     SUPERVISOR_MANAGE_POSTGRES=True \
     SUPERVISOR_MANAGE_CRON=True \
@@ -440,7 +463,9 @@ ENV SUPERVISOR_POSTGRES_AUTOSTART=False \
     STARTUP_EXPORT_USER_FILES=True \
     LOAD_GALAXY_CONDITIONAL_DEPENDENCIES=True
 
-ENTRYPOINT ["/sbin/tini", "--"]
+RUN chmod 0755 /usr/bin/cvmfs-entrypoint
+
+ENTRYPOINT ["/sbin/tini", "--", "/usr/bin/cvmfs-entrypoint"]
 
 # Autostart script that is invoked during container start
 CMD ["/usr/bin/startup"]

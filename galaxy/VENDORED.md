@@ -9,3 +9,13 @@
 The file is stored in this repository because the upstream GitLab instance
 rejects or times out requests from GitHub Actions runners. Update the vendored
 copy deliberately and record its new checksum here.
+
+## `cvmfsexec`
+
+- Source: <https://github.com/cvmfs/cvmfsexec>
+- Version: `v4.54`
+- CVMFS client: `2.14.1`
+
+The Docker build pins and assembles cvmfsexec in a dedicated stage, then copies
+the self-contained distribution into `/opt/cvmfsexec`. Update both version
+arguments in `galaxy/Dockerfile` deliberately and test amd64 and arm64 images.

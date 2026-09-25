@@ -12,6 +12,7 @@ services:
       - GALAXY_DESTINATIONS_DEFAULT=slurm_cluster_docker
       - GALAXY_CONFIG_BRAND=${GALAXY_CONFIG_BRAND:-My own Galaxy flavour}
       - GALAXY_AUTO_UPDATE_DB=True
+      - CVMFS_MODE=${CVMFS_MODE:-auto}
     hostname: galaxy-server
     privileged: True
     ports:

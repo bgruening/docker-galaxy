@@ -51,3 +51,5 @@ if ! docker run --rm \
     echo "CVMFS mount not visible in the Galaxy container."
     exit 1
 fi
+
+GALAXY_CVMFS_TEST_IMAGE=galaxy:test bash test/cvmfs/test-userspace.sh

@@ -195,7 +195,13 @@ fi
 cvmfs_repos="${CVMFS_REPOSITORIES:-data.galaxyproject.org singularity.galaxyproject.org}"
 cvmfs_repos="${cvmfs_repos//,/ }"
 
-if $PRIVILEGED; then
+if [[ "${CVMFS_USERSPACE_ACTIVE:-false}" == "true" ]]; then
+    echo "CVMFS repositories are mounted in the userspace namespace."
+elif [[ "${CVMFS_RESOLVED_MODE:-}" == "external" ]]; then
+    echo "Using externally mounted CVMFS repositories."
+elif [[ "${CVMFS_RESOLVED_MODE:-}" == "disabled" ]]; then
+    echo "CVMFS mounts are disabled."
+elif $PRIVILEGED; then
     umount /var/lib/docker
 
     if command -v mount.cvmfs >/dev/null 2>&1; then
@@ -215,7 +221,15 @@ else
     echo "Info: CVMFS mounts disabled (not running privileged). Use --privileged or the CVMFS sidecar in docker-compose."
 fi
 
-if ! mountpoint -q /cvmfs 2>/dev/null; then
+cvmfs_available=true
+for repo in $cvmfs_repos; do
+    if [[ ! -r "/cvmfs/$repo/.cvmfspublished" ]]; then
+        cvmfs_available=false
+        break
+    fi
+done
+
+if ! $cvmfs_available; then
     for repo in $cvmfs_repos; do
         repo_dir="/cvmfs/$repo"
         mkdir -p "$repo_dir"
@@ -579,9 +593,13 @@ if [[ ! -z $SUPERVISOR_POSTGRES_AUTOSTART ]]; then
     fi
 fi
 
-if $PRIVILEGED; then
-    # In privileged mode autofs and CVMFS may be available, so only append existing files.
+if $cvmfs_available; then
+    # Append CVMFS tool-data tables only after every requested repository is readable.
     export GALAXY_CONFIG_TOOL_DATA_TABLE_CONFIG_PATH="${GALAXY_CONFIG_TOOL_DATA_TABLE_CONFIG_PATH},/cvmfs/data.galaxyproject.org/byhand/location/tool_data_table_conf.xml,/cvmfs/data.galaxyproject.org/managed/location/tool_data_table_conf.xml"
+
+fi
+
+if $PRIVILEGED; then
 
     echo "Enable Galaxy Interactive Tools."
     export GALAXY_CONFIG_INTERACTIVETOOLS_ENABLE=True

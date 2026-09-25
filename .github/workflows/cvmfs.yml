@@ -8,6 +8,11 @@ on:
   pull_request:
     paths:
       - 'cvmfs/**'
+      - 'galaxy/Dockerfile'
+      - 'galaxy/cvmfs-entrypoint.sh'
+      - 'galaxy/docker-compose.yaml'
+      - 'galaxy/startup.sh'
+      - 'galaxy/startup2.sh'
       - 'test/cvmfs/**'
       - '.github/workflows/cvmfs.yml'
 
@@ -25,6 +30,11 @@ jobs:
           filters: |
             cvmfs:
               - 'cvmfs/**'
+              - 'galaxy/Dockerfile'
+              - 'galaxy/cvmfs-entrypoint.sh'
+              - 'galaxy/docker-compose.yaml'
+              - 'galaxy/startup.sh'
+              - 'galaxy/startup2.sh'
               - 'test/cvmfs/**'
               - '.github/workflows/cvmfs.yml'
 
