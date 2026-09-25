@@ -511,11 +511,12 @@ a cache to keep the most recently used data on the local disk.
 ### Userspace CVMFS (recommended)
 
 The image can mount CVMFS without `--privileged` and without a sidecar. It needs the FUSE device and
-two security relaxations required by `cvmfsexec`:
+the following security relaxations required by `cvmfsexec`:
 
 ```sh
 docker run --rm -p 8080:80 \
     --device /dev/fuse \
+    --security-opt apparmor=unconfined \
     --security-opt seccomp=unconfined \
     --security-opt systempaths=unconfined \
     -e CVMFS_MODE=userspace \
@@ -523,9 +524,11 @@ docker run --rm -p 8080:80 \
     quay.io/bgruening/galaxy
 ```
 
-`seccomp=unconfined` disables Docker's syscall filter; this is broader than a capability grant, although
-it still exposes substantially less than `--privileged`. Do not add `no-new-privileges`: startup uses
-`sudo`, and the namespace setup requires the setuid `newuidmap` and `newgidmap` helpers.
+`apparmor=unconfined` disables Docker's AppArmor confinement where AppArmor is enabled, and
+`seccomp=unconfined` disables Docker's syscall filter. These are broad security relaxations, although the
+container still receives substantially less authority than `--privileged`. Do not add
+`no-new-privileges`: startup uses `sudo`, and namespace setup requires the setuid `newuidmap` and
+`newgidmap` helpers.
 
 The on-demand cache is stored in `/export/cvmfs-cache` by default, so `/export` should use fast local
 storage. Do not share one cache directory between concurrently running containers, and exclude this
