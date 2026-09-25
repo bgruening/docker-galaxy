@@ -15,6 +15,10 @@ services:
       - CVMFS_MODE=${CVMFS_MODE:-auto}
     hostname: galaxy-server
     privileged: True
+    depends_on:
+      cvmfs:
+        condition: service_healthy
+        required: false
     ports:
       - "8080:80"
       - "9002:9002"
@@ -44,6 +48,13 @@ services:
     environment:
       - CVMFS_REPOSITORIES=data.galaxyproject.org,singularity.galaxyproject.org
       - CVMFS_CACHE_BASE=/var/lib/cvmfs
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - test -r /cvmfs/data.galaxyproject.org/.cvmfspublished && test -r /cvmfs/singularity.galaxyproject.org/.cvmfspublished
+      interval: 2s
+      timeout: 2s
+      retries: 60
     volumes:
       - type: bind
         source: ${CVMFS_MOUNT_DIR:-/cvmfs}

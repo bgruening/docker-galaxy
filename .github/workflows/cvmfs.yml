@@ -10,10 +10,13 @@ on:
       - 'cvmfs/**'
       - 'galaxy/Dockerfile'
       - 'galaxy/cvmfs-entrypoint.sh'
+      - 'galaxy/cvmfs-functions.sh'
+      - 'galaxy/cvmfsexec-multi-user.patch'
       - 'galaxy/docker-compose.yaml'
       - 'galaxy/startup.sh'
       - 'galaxy/startup2.sh'
       - 'test/cvmfs/**'
+      - 'test/smoke.sh'
       - '.github/workflows/cvmfs.yml'
 
 jobs:
@@ -32,10 +35,13 @@ jobs:
               - 'cvmfs/**'
               - 'galaxy/Dockerfile'
               - 'galaxy/cvmfs-entrypoint.sh'
+              - 'galaxy/cvmfs-functions.sh'
+              - 'galaxy/cvmfsexec-multi-user.patch'
               - 'galaxy/docker-compose.yaml'
               - 'galaxy/startup.sh'
               - 'galaxy/startup2.sh'
               - 'test/cvmfs/**'
+              - 'test/smoke.sh'
               - '.github/workflows/cvmfs.yml'
 
       - name: Run CVMFS sidecar tests

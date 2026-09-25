@@ -14,8 +14,12 @@ copy deliberately and record its new checksum here.
 
 - Source: <https://github.com/cvmfs/cvmfsexec>
 - Version: `v4.54`
+- Commit: `5d2f9154e2f252b6fdda8bc1674b7ad4dffa6559`
 - CVMFS client: `2.14.1`
 
 The Docker build pins and assembles cvmfsexec in a dedicated stage, then copies
-the self-contained distribution into `/opt/cvmfsexec`. Update both version
-arguments in `galaxy/Dockerfile` deliberately and test amd64 and arm64 images.
+the self-contained distribution into `/opt/cvmfsexec`. The local
+`cvmfsexec-multi-user.patch` uses the image's subordinate UID/GID ranges and
+keeps the launched command in that namespace so Galaxy can switch to its
+service accounts. Update the version, commit, and patch deliberately and test
+amd64 and arm64 images.

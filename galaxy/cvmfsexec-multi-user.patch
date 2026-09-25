@@ -1,0 +1,36 @@
+diff --git a/cvmfsexec b/cvmfsexec
+index b78eac7..7d48437 100755
+--- a/cvmfsexec
++++ b/cvmfsexec
+@@ -245,7 +245,9 @@ export STDINCOPYFD
+ 
+ # Note that within the here document, unprotected $ substitutions are
+ #  done by the surrounding shell, and \$ is within the unshare shell
+-unshare -rm $UNSHAREOPTS /bin/bash /dev/stdin "${@:-$SHELL}" <<!EOF-1!
++unshare --user --mount --map-user 0 --map-group 0 \
++    --map-users=1:1:65535 --map-groups=1:1:65535 \
++    $UNSHAREOPTS /bin/bash /dev/stdin "${@:-$SHELL}" <<!EOF-1!
+     #set -x
+     #PS4='c\$$+ '
+     # now in the "fakeroot" namespace
+@@ -287,9 +289,8 @@ unshare -rm $UNSHAREOPTS /bin/bash /dev/stdin "${@:-$SHELL}" <<!EOF-1!
+     MOUNTED_REPOS="$REPOS"  # they'll get mounted soon
+     while read -u \$CMDINFD CMD PARAM; do
+         if [ "\$CMD" == PID ]; then
+-            # set up uid/gid map
+-            echo "\$(awk '{print \$2; exit}' /proc/self/gid_map) 0 1" >/proc/"\$PARAM"/gid_map
+-            echo "\$(awk '{print \$2; exit}' /proc/self/uid_map) 0 1" >/proc/"\$PARAM"/uid_map
++            # The command shares this namespace so it can switch to service
++            # users covered by the subordinate uid/gid maps.
+             echo "ready" >$WAITFIFO2
+         elif $USERFUSE; then
+             proccmd "\$CMD" "\$PARAM"
+@@ -379,7 +380,7 @@ unshare -rm $UNSHAREOPTS /bin/bash /dev/stdin "${@:-$SHELL}" <<!EOF-1!
+ 
+     # quoting the here document's delimeter makes this nested shell not
+     #  interpret $ substitutions, but the previous one still does
+-    \$EXEC unshare -U /bin/bash /dev/stdin "\${@:-$SHELL}" <<'!EOF-2!'
++    \$EXEC /bin/bash /dev/stdin "\${@:-$SHELL}" <<'!EOF-2!'
+         #set -x
+         #PS4='c\$$+ '
+         # now in the user namespace

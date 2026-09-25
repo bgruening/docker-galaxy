@@ -50,3 +50,4 @@ jobs:
         run: test/cvmfs/test-userspace.sh
         env:
           GALAXY_CVMFS_TEST_IMAGE: quay.io/bgruening/galaxy:ci-arm64
+          GALAXY_CVMFS_TEST_EXPECTED_ARCH: aarch64

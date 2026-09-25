@@ -526,16 +526,14 @@ docker run --rm -p 8080:80 \
 The on-demand cache is stored in `/export/cvmfs-cache` by default, so `/export` should use fast local
 storage. Do not share one cache directory between concurrently running containers.
 
-To verify the same reference-data and tool-container paths exercised by CI, replace the default command:
+To boot Galaxy and verify the same reference-data, tool-data, and tool-container paths exercised by CI,
+run the repository smoke test against a locally built image:
 
 ```sh
-docker run --rm \
-    --device /dev/fuse \
-    --security-opt seccomp=unconfined \
-    --security-opt systempaths=unconfined \
-    -e CVMFS_MODE=userspace \
-    quay.io/bgruening/galaxy \
-    bash -c 'test -d /cvmfs/data.galaxyproject.org/byhand && test -d /cvmfs/singularity.galaxyproject.org/all'
+docker build -t galaxy-cvmfs galaxy
+GALAXY_SMOKE_IMAGE=galaxy-cvmfs \
+GALAXY_SMOKE_RUNTIME=userspace-cvmfs \
+test/smoke.sh
 ```
 
 Userspace mounts live in the entrypoint's mount namespace and are inherited by Galaxy and the jobs it
