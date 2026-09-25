@@ -352,75 +352,17 @@ else
     log_warn "Container routing: no Docker/Singularity detected; using ${dest_default}"
 fi
 
+# shellcheck source-path=SCRIPTDIR
 # shellcheck source=cvmfs-functions.sh
 source /usr/lib/docker-galaxy/cvmfs-functions.sh
 cvmfs_set_repositories
-cvmfs_autofs_configured=false
-if [ -f /etc/auto.cvmfs ] || [ -f /etc/auto.master.d/cvmfs.autofs ]; then
-    cvmfs_autofs_configured=true
-fi
 
 # This unmount is part of the privileged Docker-in-Docker setup, not CVMFS.
 if $PRIVILEGED; then
     umount /var/lib/docker
 fi
 
-if [[ "${CVMFS_USERSPACE_ACTIVE:-false}" == "true" ]]; then
-    log_info "CVMFS repositories are mounted in the userspace namespace"
-elif [[ "${CVMFS_RESOLVED_MODE:-}" == "external" ]]; then
-    log_info "Using externally mounted CVMFS repositories"
-elif [[ "${CVMFS_RESOLVED_MODE:-}" == "disabled" ]]; then
-    log_info "CVMFS mounts are disabled"
-elif [[ "${CVMFS_RESOLVED_MODE:-}" == "system" ]]; then
-    log_info "Configuring CVMFS mounts (system mode)"
-    if command -v mount.cvmfs >/dev/null 2>&1; then
-        chmod 666 /dev/fuse || true
-        if $cvmfs_autofs_configured; then
-            log_info "CVMFS autofs configured; mounts will appear on first access after services start."
-        else
-            for repo in "${CVMFS_REPOSITORY_LIST[@]}"; do
-                repo_dir="/cvmfs/$repo"
-                mkdir -p "$repo_dir"
-                if ! mountpoint -q "$repo_dir"; then
-                    log_info "Mounting CVMFS repo $repo"
-                    if ! mount -t cvmfs "$repo" "$repo_dir"; then
-                        sleep 2
-                        mount -t cvmfs "$repo" "$repo_dir" || log_warn "Failed to mount CVMFS repo $repo"
-                    fi
-                fi
-            done
-        fi
-    else
-        log_info "CVMFS client not available; install CVMFS or use the sidecar via docker-compose --profile cvmfs."
-    fi
-else
-    log_info "CVMFS mounts are unavailable in the resolved runtime mode"
-fi
-
-cvmfs_available=false
-cvmfs_data_available=false
-if [[ "${CVMFS_RESOLVED_MODE:-}" != "disabled" ]]; then
-    cvmfs_repositories_available && cvmfs_available=true
-    if cvmfs_repository_requested data.galaxyproject.org \
-        && cvmfs_repository_available data.galaxyproject.org \
-        && [[ -r /cvmfs/data.galaxyproject.org/byhand/location/tool_data_table_conf.xml ]] \
-        && [[ -r /cvmfs/data.galaxyproject.org/managed/location/tool_data_table_conf.xml ]]; then
-        cvmfs_data_available=true
-    fi
-fi
-
-if ! $cvmfs_available; then
-    for repo in "${CVMFS_REPOSITORY_LIST[@]}"; do
-        cvmfs_repository_available "$repo" && continue
-        repo_dir="/cvmfs/$repo"
-        mkdir -p "$repo_dir"
-        chown "$GALAXY_USER:$GALAXY_USER" "$repo_dir"
-        if [ "$repo" = "singularity.galaxyproject.org" ]; then
-            mkdir -p "$repo_dir/all"
-            chown "$GALAXY_USER:$GALAXY_USER" "$repo_dir/all"
-        fi
-    done
-fi
+cvmfs_prepare_mounts autofs
 
 show_runtime_summary
 show_galaxy_env_summary
@@ -837,14 +779,7 @@ if [[ ! -z $SUPERVISOR_POSTGRES_AUTOSTART ]]; then
     fi
 fi
 
-if $cvmfs_data_available; then
-    # Append CVMFS tool-data tables only when the data repository is enabled and readable.
-    export GALAXY_CONFIG_TOOL_DATA_TABLE_CONFIG_PATH="${GALAXY_CONFIG_TOOL_DATA_TABLE_CONFIG_PATH},/cvmfs/data.galaxyproject.org/byhand/location/tool_data_table_conf.xml,/cvmfs/data.galaxyproject.org/managed/location/tool_data_table_conf.xml"
-fi
-
-if $cvmfs_available && $cvmfs_data_available && [[ -n "${CVMFS_READY_FILE:-}" ]]; then
-    printf 'repositories=ready\ntool_data=ready\n' > "$CVMFS_READY_FILE"
-fi
+cvmfs_enable_tool_data
 
 if $PRIVILEGED; then
     log_info "Enabling Galaxy Interactive Tools"

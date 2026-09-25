@@ -511,7 +511,7 @@ a cache to keep the most recently used data on the local disk.
 ### Userspace CVMFS (recommended)
 
 The image can mount CVMFS without `--privileged` and without a sidecar. It needs the FUSE device and
-two narrowly scoped security options:
+two security relaxations required by `cvmfsexec`:
 
 ```sh
 docker run --rm -p 8080:80 \
@@ -523,10 +523,15 @@ docker run --rm -p 8080:80 \
     quay.io/bgruening/galaxy
 ```
 
-The on-demand cache is stored in `/export/cvmfs-cache` by default, so `/export` should use fast local
-storage. Do not share one cache directory between concurrently running containers.
+`seccomp=unconfined` disables Docker's syscall filter; this is broader than a capability grant, although
+it still exposes substantially less than `--privileged`. Do not add `no-new-privileges`: startup uses
+`sudo`, and the namespace setup requires the setuid `newuidmap` and `newgidmap` helpers.
 
-To boot Galaxy and verify the same reference-data, tool-data, and tool-container paths exercised by CI,
+The on-demand cache is stored in `/export/cvmfs-cache` by default, so `/export` should use fast local
+storage. Do not share one cache directory between concurrently running containers, and exclude this
+disposable cache directory from backups of the `/export` volume.
+
+To boot Galaxy and verify the same reference-data and tool-data paths exercised by CI,
 run the repository smoke test against a locally built image:
 
 ```sh
@@ -566,7 +571,8 @@ CVMFS_MODE=external CVMFS_MOUNT_DIR=/cvmfs EXPORT_DIR=./export docker compose --
 ```
 
 This starts a dedicated CVMFS container that mounts the repositories and shares `/cvmfs` with the Galaxy
-container. The CVMFS cache is persisted in `${EXPORT_DIR}/cvmfs-cache`.
+container. The CVMFS cache is persisted in `${EXPORT_DIR}/cvmfs-cache`. The optional dependency used by
+this profile requires Docker Compose 2.20.2 or newer.
 
 
 ## Personalize your Galaxy <a name="Personalize-your-Galaxy" /> [[toc]](#toc)
@@ -948,7 +954,8 @@ The project includes local test scripts and CI workflows. Use the matrix below t
 | Bioblend | `test/bioblend/test.sh` | Running Galaxy container | Uses a Bioblend test image against Galaxy. |
 | Slurm | `test/slurm/test.sh` | Docker, Slurm test image | Uses external Slurm container; set `GALAXY_IMAGE=galaxy:test` if needed. |
 | SGE (Grid Engine) | `test/gridengine/test.sh` | Docker, SGE test image | Uses ephemeris container to wait for Galaxy. |
-| CVMFS userspace + sidecar | `test/cvmfs/test.sh` | `/dev/fuse` security options; privileged sidecar fallback | Validates userspace mounts on amd64/arm64 and sidecar mount propagation. |
+| CVMFS userspace | `test/cvmfs/test-userspace.sh` | `/dev/fuse` and documented security options | Boots Galaxy and verifies a CVMFS-backed tool-data table through the API. |
+| CVMFS sidecar | `test/cvmfs/test.sh` | Privileged sidecar | Validates sidecar mount propagation into a consumer container. |
 | FTP/SFTP | `.github/workflows/single.sh` | Docker, sshpass (CI) | FTP and SFTP checks run in CI; local run skips SFTP if `sshpass` is missing. |
 | /export persistence | `startup.sh` / `startup2.sh` | `/export` volume | Export and cache relocation happens during startup; exercised by CI runs. |
 | HTTPS/TLS | `.github/workflows/single.sh` | Docker | Uses `curl` and `openssl s_client` against port 443. |
@@ -960,7 +967,7 @@ The project includes local test scripts and CI workflows. Use the matrix below t
 
 Notes:
 - If `/tmp` is small in CI, set `TMPDIR=/var/tmp` for test scripts.
-- CVMFS sidecar CI builds/pushes on tags; branch pushes run tests only when CVMFS paths change.
+- CVMFS sidecar CI tests pull requests that change sidecar paths and builds/pushes from `main` and tags.
 
 
 

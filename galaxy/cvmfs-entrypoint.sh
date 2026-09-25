@@ -7,6 +7,7 @@ CVMFS_CACHE_BASE=${CVMFS_CACHE_BASE:-/export/cvmfs-cache}
 CVMFS_QUOTA_LIMIT=${CVMFS_QUOTA_LIMIT:-4000}
 CVMFS_EXTERNAL_WAIT=${CVMFS_EXTERNAL_WAIT:-60}
 
+# shellcheck source-path=SCRIPTDIR
 # shellcheck source=cvmfs-functions.sh
 source /usr/lib/docker-galaxy/cvmfs-functions.sh
 cvmfs_set_repositories
@@ -23,14 +24,18 @@ wait_for_external_repositories() {
 }
 
 userspace_prerequisites_available() {
+    local uid_start uid_count gid_start gid_count
     [[ -c /dev/fuse ]] || return 1
     [[ -x "$CVMFS_USERSPACE_ROOT/cvmfsexec" ]] || return 1
     command -v newuidmap >/dev/null || return 1
     command -v newgidmap >/dev/null || return 1
+    IFS=: read -r uid_start uid_count < <(awk -F: '$1 == "root" { print $2 ":" $3; exit }' /etc/subuid)
+    IFS=: read -r gid_start gid_count < <(awk -F: '$1 == "root" { print $2 ":" $3; exit }' /etc/subgid)
+    [[ "$uid_start" == 1 && "$gid_start" == 1 && -n "$uid_count" && -n "$gid_count" ]] || return 1
     # The service IDs are passed as positional parameters to the namespace shell.
     # shellcheck disable=SC2016
     unshare --user --map-user 0 --map-group 0 \
-        --map-users=1:1:65535 --map-groups=1:1:65535 \
+        --map-users="1:${uid_start}:${uid_count}" --map-groups="1:${gid_start}:${gid_count}" \
         bash -c 'setpriv --reuid="$1" --regid="$2" --clear-groups true && setpriv --reuid="$3" --regid="$4" --clear-groups true' \
         bash "${GALAXY_UID:-1450}" "${GALAXY_GID:-1450}" \
         "${GALAXY_POSTGRES_UID:-1550}" "${GALAXY_POSTGRES_GID:-1550}" \
@@ -91,7 +96,7 @@ case "$CVMFS_MODE" in
 esac
 
 export CVMFS_RESOLVED_MODE
-echo "CVMFS mode: ${CVMFS_RESOLVED_MODE}"
+echo "CVMFS mode: ${CVMFS_RESOLVED_MODE}" >&2
 
 if [[ "$CVMFS_RESOLVED_MODE" == userspace ]]; then
     configure_userspace_cache

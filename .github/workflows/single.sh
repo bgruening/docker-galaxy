@@ -284,4 +284,8 @@ fi
 
 docker stop galaxy
 docker rm -f galaxy
+if [[ "${CI:-}" == "true" ]]; then
+    GALAXY_CVMFS_TEST_IMAGE="$DOCKER_RUN_CONTAINER" \
+        bash test/cvmfs/test-userspace.sh
+fi
 docker rmi -f $DOCKER_RUN_CONTAINER || true

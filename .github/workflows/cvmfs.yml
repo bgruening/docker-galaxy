@@ -1,56 +1,38 @@
 name: cvmfs-sidecar
 on:
   push:
-    branches:
-      - '**'
+    branches: [main]
     tags:
       - '*'
+    paths:
+      - 'cvmfs/**'
+      - 'test/cvmfs/test.sh'
+      - '.github/workflows/cvmfs.yml'
   pull_request:
     paths:
       - 'cvmfs/**'
-      - 'galaxy/Dockerfile'
-      - 'galaxy/cvmfs-entrypoint.sh'
-      - 'galaxy/cvmfs-functions.sh'
-      - 'galaxy/cvmfsexec-multi-user.patch'
       - 'galaxy/docker-compose.yaml'
-      - 'galaxy/startup.sh'
-      - 'galaxy/startup2.sh'
-      - 'test/cvmfs/**'
-      - 'test/smoke.sh'
+      - 'test/cvmfs/test.sh'
       - '.github/workflows/cvmfs.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build_test_publish:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Detect CVMFS changes
-        id: changes
-        uses: dorny/paths-filter@v3
-        with:
-          filters: |
-            cvmfs:
-              - 'cvmfs/**'
-              - 'galaxy/Dockerfile'
-              - 'galaxy/cvmfs-entrypoint.sh'
-              - 'galaxy/cvmfs-functions.sh'
-              - 'galaxy/cvmfsexec-multi-user.patch'
-              - 'galaxy/docker-compose.yaml'
-              - 'galaxy/startup.sh'
-              - 'galaxy/startup2.sh'
-              - 'test/cvmfs/**'
-              - 'test/smoke.sh'
-              - '.github/workflows/cvmfs.yml'
-
       - name: Run CVMFS sidecar tests
-        if: github.event_name == 'pull_request' || steps.changes.outputs.cvmfs == 'true' || startsWith(github.ref, 'refs/tags/')
         run: bash test/cvmfs/test.sh
 
       - name: Set image version
         id: version
-        if: github.event_name == 'push' && (steps.changes.outputs.cvmfs == 'true' || startsWith(github.ref, 'refs/tags/'))
+        if: github.event_name == 'push'
         run: |
           set -euo pipefail
           if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
@@ -62,11 +44,11 @@ jobs:
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: Set up Docker Buildx
-        if: github.event_name == 'push' && (steps.changes.outputs.cvmfs == 'true' || startsWith(github.ref, 'refs/tags/'))
+        if: github.event_name == 'push'
         uses: docker/setup-buildx-action@v3
 
       - name: Login to Quay IO
-        if: github.event_name == 'push' && (steps.changes.outputs.cvmfs == 'true' || startsWith(github.ref, 'refs/tags/'))
+        if: github.event_name == 'push'
         uses: docker/login-action@v3
         with:
           registry: quay.io
@@ -74,7 +56,7 @@ jobs:
           password: ${{ secrets.QUAY_OAUTH_TOKEN }}
 
       - name: Build and push CVMFS image
-        if: github.event_name == 'push' && (steps.changes.outputs.cvmfs == 'true' || startsWith(github.ref, 'refs/tags/'))
+        if: github.event_name == 'push'
         uses: docker/build-push-action@v6
         with:
           context: "{{defaultContext}}:cvmfs"

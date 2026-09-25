@@ -7,8 +7,8 @@ GALAXY_SMOKE_PORT=${GALAXY_SMOKE_PORT:-8080}
 GALAXY_SMOKE_TIMEOUT=${GALAXY_SMOKE_TIMEOUT:-600}
 GALAXY_SMOKE_EXPECTED_ARCH=${GALAXY_SMOKE_EXPECTED_ARCH:-}
 GALAXY_SMOKE_RUNTIME=${GALAXY_SMOKE_RUNTIME:-privileged}
+GALAXY_SMOKE_API_KEY=${GALAXY_SMOKE_API_KEY:-fakekey}
 GALAXY_SMOKE_URL="http://127.0.0.1:${GALAXY_SMOKE_PORT}"
-GALAXY_SMOKE_CVMFS_READY_FILE=/tmp/galaxy-cvmfs-ready
 
 userspace_cache_dir=""
 
@@ -23,7 +23,10 @@ cleanup() {
 
     docker rm -f "$GALAXY_SMOKE_CONTAINER" >/dev/null 2>&1 || true
     if [[ -n "$userspace_cache_dir" ]]; then
-        rm -rf "$userspace_cache_dir" >/dev/null 2>&1 || true
+        docker run --rm --entrypoint find \
+            -v "$userspace_cache_dir:/cache" "$GALAXY_SMOKE_IMAGE" \
+            /cache -mindepth 1 -delete >/dev/null 2>&1 || true
+        rmdir "$userspace_cache_dir" >/dev/null 2>&1 || true
     fi
     exit "$status"
 }
@@ -51,7 +54,6 @@ case "$GALAXY_SMOKE_RUNTIME" in
             --security-opt seccomp=unconfined
             --security-opt systempaths=unconfined
             -e CVMFS_MODE=userspace
-            -e "CVMFS_READY_FILE=$GALAXY_SMOKE_CVMFS_READY_FILE"
             -v "$userspace_cache_dir:/export/cvmfs-cache:delegated"
         )
         ;;
@@ -81,14 +83,22 @@ if [[ -n "$GALAXY_SMOKE_EXPECTED_ARCH" ]]; then
 fi
 
 if [[ "$GALAXY_SMOKE_RUNTIME" == "userspace-cvmfs" ]]; then
-    if ! docker exec "$GALAXY_SMOKE_CONTAINER" \
-        grep -qx 'repositories=ready' "$GALAXY_SMOKE_CVMFS_READY_FILE"; then
-        echo "Galaxy booted, but the requested CVMFS repositories were not ready."
-        exit 1
-    fi
-    if ! docker exec "$GALAXY_SMOKE_CONTAINER" \
-        grep -qx 'tool_data=ready' "$GALAXY_SMOKE_CVMFS_READY_FILE"; then
-        echo "Galaxy booted, but CVMFS tool-data configuration was not ready."
+    if ! curl --fail --silent --show-error \
+        -H "x-api-key: ${GALAXY_SMOKE_API_KEY}" \
+        "${GALAXY_SMOKE_URL}/api/tool_data/all_fasta" | python3 -c '
+import json
+import sys
+
+table = json.load(sys.stdin)
+assert table["name"] == "all_fasta"
+assert table["fields"], "all_fasta has no entries"
+assert any(
+    isinstance(value, str) and value.startswith("/cvmfs/data.galaxyproject.org/")
+    for row in table["fields"]
+    for value in row
+), "all_fasta has no CVMFS-backed entries"
+'; then
+        echo "Galaxy booted, but its all_fasta tool-data table was not loaded from CVMFS."
         exit 1
     fi
     if [[ ! -d "$userspace_cache_dir/shared" ]]; then

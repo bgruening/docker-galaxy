@@ -1,11 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if ! docker build -t galaxy:test ./galaxy; then
-    echo "Galaxy docker image build failed."
-    exit 1
-fi
-
 if ! docker build -t galaxy-cvmfs:test ./cvmfs; then
     echo "CVMFS sidecar image build failed."
     exit 1
@@ -47,9 +42,7 @@ fi
 
 if ! docker run --rm \
     -v "$cvmfs_mount_dir:/cvmfs:rshared" \
-    galaxy:test /bin/sh -c "ls /cvmfs/data.galaxyproject.org/byhand >/dev/null"; then
-    echo "CVMFS mount not visible in the Galaxy container."
+    ubuntu:24.04 /bin/sh -c "ls /cvmfs/data.galaxyproject.org/byhand >/dev/null"; then
+    echo "CVMFS mount not visible in a consumer container."
     exit 1
 fi
-
-GALAXY_CVMFS_TEST_IMAGE=galaxy:test bash test/cvmfs/test-userspace.sh

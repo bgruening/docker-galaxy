@@ -51,7 +51,7 @@ services:
     healthcheck:
       test:
         - CMD-SHELL
-        - test -r /cvmfs/data.galaxyproject.org/.cvmfspublished && test -r /cvmfs/singularity.galaxyproject.org/.cvmfspublished
+        - for repo in $$(printf '%s' "$$CVMFS_REPOSITORIES" | tr ',' ' '); do test -r "/cvmfs/$$repo/.cvmfspublished" || exit 1; done
       interval: 2s
       timeout: 2s
       retries: 60
