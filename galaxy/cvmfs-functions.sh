@@ -10,6 +10,14 @@ cvmfs_repository_available() {
     [[ -r "/cvmfs/$1/.cvmfspublished" ]]
 }
 
+cvmfs_repository_requested() {
+    local requested_repository
+    for requested_repository in "${CVMFS_REPOSITORY_LIST[@]}"; do
+        [[ "$requested_repository" == "$1" ]] && return 0
+    done
+    return 1
+}
+
 cvmfs_repositories_available() {
     local repository
     for repository in "${CVMFS_REPOSITORY_LIST[@]}"; do

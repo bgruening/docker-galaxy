@@ -229,7 +229,8 @@ cvmfs_available=false
 cvmfs_data_available=false
 if [[ "${CVMFS_RESOLVED_MODE:-}" != "disabled" ]]; then
     cvmfs_repositories_available && cvmfs_available=true
-    if cvmfs_repository_available data.galaxyproject.org \
+    if cvmfs_repository_requested data.galaxyproject.org \
+        && cvmfs_repository_available data.galaxyproject.org \
         && [[ -r /cvmfs/data.galaxyproject.org/byhand/location/tool_data_table_conf.xml ]] \
         && [[ -r /cvmfs/data.galaxyproject.org/managed/location/tool_data_table_conf.xml ]]; then
         cvmfs_data_available=true
