@@ -8,7 +8,9 @@ GALAXY_SMOKE_TIMEOUT=${GALAXY_SMOKE_TIMEOUT:-600}
 GALAXY_SMOKE_EXPECTED_ARCH=${GALAXY_SMOKE_EXPECTED_ARCH:-}
 GALAXY_SMOKE_RUNTIME=${GALAXY_SMOKE_RUNTIME:-privileged}
 GALAXY_SMOKE_API_KEY=${GALAXY_SMOKE_API_KEY:-fakekey}
+GALAXY_SMOKE_CVMFS_TOOL_TEST=${GALAXY_SMOKE_CVMFS_TOOL_TEST:-false}
 GALAXY_SMOKE_URL="http://127.0.0.1:${GALAXY_SMOKE_PORT}"
+repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 
 userspace_cache_dir=""
 
@@ -64,6 +66,20 @@ case "$GALAXY_SMOKE_RUNTIME" in
         ;;
 esac
 
+if [[ "$GALAXY_SMOKE_CVMFS_TOOL_TEST" == true ]]; then
+    if [[ "$GALAXY_SMOKE_RUNTIME" != userspace-cvmfs ]]; then
+        echo "CVMFS tool execution requires GALAXY_SMOKE_RUNTIME=userspace-cvmfs." >&2
+        exit 1
+    fi
+    docker_args+=(
+        -v "$repo_root/test/cvmfs/tools:/cvmfs-tool-test:ro"
+        -e GALAXY_CVMFS_TOOL_TEST=true
+        -e GALAXY_CONFIG_TOOL_CONFIG_FILE=/cvmfs-tool-test/tool_conf.xml
+        -e GALAXY_CONFIG_CONTAINER_RESOLVERS_CONFIG_FILE=/cvmfs-tool-test/container_resolvers.yml
+        -e GALAXY_CONFIG_CONDA_AUTO_INSTALL=False
+    )
+fi
+
 container_command=()
 if [[ "$GALAXY_SMOKE_RUNTIME" == userspace-cvmfs ]]; then
     # Run inside the entrypoint's namespaces. docker exec enters the original
@@ -75,6 +91,10 @@ if [[ "$GALAXY_SMOKE_RUNTIME" == userspace-cvmfs ]]; then
                 ls /cvmfs/data.galaxyproject.org/byhand/location/tool_data_table_conf.xml \
                    /cvmfs/singularity.galaxyproject.org/all >/dev/null
         done
+        if [[ "${GALAXY_CVMFS_TOOL_TEST:-false}" == true ]]; then
+            python3 /cvmfs-tool-test/prepare-job-config.py "$GALAXY_CONFIG_JOB_CONFIG_FILE" /tmp/cvmfs-job-conf.xml
+            export GALAXY_CONFIG_JOB_CONFIG_FILE=/tmp/cvmfs-job-conf.xml
+        fi
         exec /usr/bin/startup
     ')
 fi
@@ -120,6 +140,12 @@ assert any(
         echo "Userspace CVMFS did not use the persisted cache directory."
         exit 1
     fi
+fi
+
+if [[ "$GALAXY_SMOKE_CVMFS_TOOL_TEST" == true ]]; then
+    GALAXY_CVMFS_TEST_URL="$GALAXY_SMOKE_URL" \
+    GALAXY_CVMFS_TEST_API_KEY="$GALAXY_SMOKE_API_KEY" \
+        bash "$repo_root/test/cvmfs/test-tool-execution.sh"
 fi
 
 echo "Galaxy is ready at ${GALAXY_SMOKE_URL}."

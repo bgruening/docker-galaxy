@@ -137,6 +137,7 @@ docker buildx build \
 if [[ "${CI:-}" == "true" ]]; then
     sudo apparmor_parser -r galaxy/cvmfs-apparmor.profile
     GALAXY_SMOKE_APPARMOR_PROFILE=galaxy-cvmfs-userspace \
+    GALAXY_SMOKE_CVMFS_TOOL_TEST=true \
     GALAXY_CVMFS_TEST_IMAGE="$DOCKER_RUN_CONTAINER" \
         bash test/cvmfs/test-userspace.sh
 fi

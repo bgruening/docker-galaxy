@@ -1,0 +1,4 @@
+<toolbox tool_path="/cvmfs-tool-test">
+    <tool file="/galaxy/tools/data_source/upload.xml" />
+    <tool file="seqtk.xml" />
+</toolbox>

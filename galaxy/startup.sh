@@ -139,63 +139,15 @@ fi
 cd $GALAXY_ROOT_DIR
 . $GALAXY_VIRTUAL_ENV/bin/activate
 
-# Decide container routing based on runtime capabilities; prefer Singularity when available.
-docker_ok=false
-if [ -S /var/run/docker.sock ] || command -v docker >/dev/null 2>&1; then
-    docker_ok=true
-fi
-
-singularity_cmd=""
-if command -v singularity >/dev/null 2>&1; then
-    singularity_cmd="singularity"
-elif command -v apptainer >/dev/null 2>&1; then
-    singularity_cmd="apptainer"
-fi
-
-singularity_ok=false
-if $PRIVILEGED && [ -n "$singularity_cmd" ]; then
-    singularity_ok=true
-fi
-
-dest_default="${GALAXY_DESTINATIONS_DEFAULT:-}"
-dest_docker="${GALAXY_DESTINATIONS_DOCKER_DEFAULT:-}"
-
-if [ -z "$dest_default" ] || { $singularity_ok && [ "$dest_default" = "slurm_cluster" ]; }; then
-    if $singularity_ok; then
-        dest_default="slurm_cluster_singularity"
-    elif $docker_ok; then
-        dest_default="slurm_cluster_docker"
-    else
-        dest_default="slurm_cluster"
-    fi
-    export GALAXY_DESTINATIONS_DEFAULT="$dest_default"
-fi
-
-if [ -z "$dest_docker" ]; then
-    if $docker_ok; then
-        dest_docker="slurm_cluster_docker"
-    else
-        dest_docker="$dest_default"
-    fi
-    export GALAXY_DESTINATIONS_DOCKER_DEFAULT="$dest_docker"
-else
-    dest_docker="$GALAXY_DESTINATIONS_DOCKER_DEFAULT"
-fi
-
-if $singularity_ok; then
-    export SINGULARITY_CACHEDIR="${SINGULARITY_CACHEDIR:-/export/container_cache/singularity/mulled}"
-    export APPTAINER_CACHEDIR="${APPTAINER_CACHEDIR:-$SINGULARITY_CACHEDIR}"
-    echo "Container routing: default -> ${dest_default} (Singularity via ${singularity_cmd}); Docker -> ${dest_docker}"
-elif $docker_ok; then
-    echo "Container routing: default -> ${dest_default} (Docker socket detected); Docker -> ${dest_docker}"
-else
-    echo "Container routing: no Docker/Singularity detected; using ${dest_default}"
-fi
+# shellcheck source-path=SCRIPTDIR
+# shellcheck source=container-functions.sh
+source /usr/lib/docker-galaxy/container-functions.sh
 
 # shellcheck source-path=SCRIPTDIR
 # shellcheck source=cvmfs-functions.sh
 source /usr/lib/docker-galaxy/cvmfs-functions.sh
 cvmfs_set_repositories
+galaxy_configure_container_routing
 
 # This unmount is part of the privileged Docker-in-Docker setup, not CVMFS.
 if $PRIVILEGED; then
