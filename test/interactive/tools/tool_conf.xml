@@ -1,0 +1,3 @@
+<toolbox tool_path="/interactive-tool-test">
+    <tool file="http.xml" />
+</toolbox>

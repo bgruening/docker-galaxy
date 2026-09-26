@@ -32,7 +32,7 @@ jobs:
     - uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install Planemo for CVMFS tool verification
+    - name: Install Planemo for tool and service verification
       run: python -m pip install 'planemo==0.75.47'
     - name: Test container routing
       run: python -m unittest discover -s test/cvmfs -p 'test_container_routing.py'
@@ -44,4 +44,11 @@ jobs:
       with:
         name: cvmfs-tool-test-reports
         path: test-results/cvmfs-tools/
+        if-no-files-found: ignore
+    - name: Upload Interactive Tool test reports
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: interactive-tool-test-reports
+        path: test-results/interactive-tools/
         if-no-files-found: ignore
