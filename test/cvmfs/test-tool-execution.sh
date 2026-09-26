@@ -17,7 +17,7 @@ mkdir -p "$results_dir"
     --test_output "$results_dir/tool_test_output.html" \
     --test_output_json "$results_dir/tool_test_output.json" \
     --test_output_xunit "$results_dir/tool_test_output.xml" \
-    gxid://tools/cvmfs_seqtk_smoke
+    "$repo_root/test/cvmfs/tools/seqtk.xml"
 
 # Guard against an empty test discovery being reported as a successful run.
 python3 - "$results_dir/tool_test_output.json" <<'PY'
