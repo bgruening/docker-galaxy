@@ -47,7 +47,7 @@ RUN build_arch="${TARGETARCH:-$(dpkg --print-architecture)}" \
 
 FROM build_base AS build_galaxy
 
-ARG GALAXY_RELEASE=release_26.1
+ARG GALAXY_RELEASE=dev
 ARG GALAXY_REPO=https://github.com/galaxyproject/galaxy
 
 ENV NODE_OPTIONS=--max-old-space-size=4096 \
@@ -453,8 +453,10 @@ EXPOSE 9002
 # Mark folders as imported from the host.
 VOLUME ["/export/", "/data/", "/var/lib/docker"]
 
-ADD startup.sh /usr/bin/startup
-ADD startup2.sh /usr/bin/startup2
+# Keep the previous implementation as a fallback until Galaxy 27.0.
+COPY --chmod=0755 startup.sh /usr/bin/startup-legacy
+COPY --chmod=0755 startup2.sh /usr/bin/startup
+RUN ln -s startup /usr/bin/startup2
 COPY --chmod=0755 cvmfs-entrypoint.sh /usr/bin/cvmfs-entrypoint
 COPY --chmod=0644 cvmfs-functions.sh /usr/lib/docker-galaxy/cvmfs-functions.sh
 COPY --chmod=0644 container-functions.sh /usr/lib/docker-galaxy/container-functions.sh
