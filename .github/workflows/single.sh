@@ -140,6 +140,8 @@ if [[ "${CI:-}" == "true" ]]; then
     GALAXY_SMOKE_CVMFS_TOOL_TEST=true \
     GALAXY_CVMFS_TEST_IMAGE="$DOCKER_RUN_CONTAINER" \
         bash test/cvmfs/test-userspace.sh
+    GALAXY_IT_TEST_IMAGE="$DOCKER_RUN_CONTAINER" \
+        bash test/interactive/test-interactive.sh
 fi
 
 docker rm -f galaxy httpstest || true
