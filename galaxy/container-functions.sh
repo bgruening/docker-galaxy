@@ -1,11 +1,16 @@
 #!/usr/bin/env bash
 
-# Shared by both startup implementations.
+galaxy_docker_available() {
+    [ -S /var/run/docker.sock ] || command -v docker >/dev/null 2>&1
+}
+
+# Shared by both startup implementations; initialize CVMFS repositories first.
 galaxy_configure_container_routing() {
     local routing_log=${1:-echo}
+    local routing_warn=${2:-$routing_log}
     local docker_ok singularity_cmd singularity_ok dest_default dest_docker
     docker_ok=false
-    if [ -S /var/run/docker.sock ] || command -v docker >/dev/null 2>&1; then
+    if galaxy_docker_available; then
         docker_ok=true
     fi
 
@@ -17,7 +22,12 @@ galaxy_configure_container_routing() {
     fi
 
     singularity_ok=false
-    if { ${PRIVILEGED:-false} || [[ "${CVMFS_USERSPACE_ACTIVE:-false}" == true ]]; } && [ -n "$singularity_cmd" ]; then
+    if {
+        ${PRIVILEGED:-false} || {
+            [[ "${CVMFS_USERSPACE_ACTIVE:-false}" == true ]] &&
+                cvmfs_repository_requested singularity.galaxyproject.org
+        }
+    } && [ -n "$singularity_cmd" ]; then
         singularity_ok=true
         if [[ "${CVMFS_USERSPACE_ACTIVE:-false}" == true ]]; then
             # Avoid Singularity's setuid path inside cvmfsexec's user namespace.
@@ -60,6 +70,6 @@ galaxy_configure_container_routing() {
     elif $docker_ok; then
         "$routing_log" "Container routing: default -> ${dest_default} (Docker socket detected); Docker -> ${dest_docker}"
     else
-        "$routing_log" "Container routing: no Docker/Singularity detected; using ${dest_default}"
+        "$routing_warn" "Container routing: no Docker/Singularity detected; using ${dest_default}"
     fi
 }

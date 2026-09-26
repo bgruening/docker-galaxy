@@ -302,12 +302,12 @@ cd $GALAXY_ROOT_DIR
 # shellcheck source-path=SCRIPTDIR
 # shellcheck source=container-functions.sh
 source /usr/lib/docker-galaxy/container-functions.sh
-galaxy_configure_container_routing log_info
 
 # shellcheck source-path=SCRIPTDIR
 # shellcheck source=cvmfs-functions.sh
 source /usr/lib/docker-galaxy/cvmfs-functions.sh
 cvmfs_set_repositories
+galaxy_configure_container_routing log_info log_warn
 
 # This unmount is part of the privileged Docker-in-Docker setup, not CVMFS.
 if $PRIVILEGED; then

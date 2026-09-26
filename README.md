@@ -565,21 +565,21 @@ Userspace mounts live in the entrypoint's mount namespace and are inherited by G
 launches. A separate `docker exec` process cannot browse those mounts directly.
 
 In userspace CVMFS mode, startup selects the `slurm_cluster_singularity` destination when Singularity
-is installed and the default destination is unset or still `slurm_cluster`. Jobs use `--userns` to
+is installed, `singularity.galaxyproject.org` is requested in `CVMFS_REPOSITORIES`, and the default
+destination is unset or still `slurm_cluster`. Jobs use `--userns` to
 avoid the setuid execution path inside the CVMFS user namespace. Additional options can be supplied
 with `GALAXY_SINGULARITY_RUN_EXTRA_ARGUMENTS`; startup preserves them and adds `--userns`.
 Explicit destination overrides are preserved.
 
 #### Verify CVMFS-backed tool execution
 
-On an amd64 Linux host with the security configuration above and Planemo 0.75.47 installed in a
-Python virtual environment, run:
+On an amd64 Linux host configured for [userspace CVMFS](#userspace-cvmfs-recommended), with
+Planemo 0.75.47 installed in a Python virtual environment, run:
 
 ```sh
-GALAXY_SMOKE_IMAGE=galaxy-cvmfs \
-GALAXY_SMOKE_RUNTIME=userspace-cvmfs \
+GALAXY_CVMFS_TEST_IMAGE=galaxy-cvmfs \
 GALAXY_SMOKE_CVMFS_TOOL_TEST=true \
-test/smoke.sh
+test/cvmfs/test-userspace.sh
 ```
 
 On Ubuntu hosts using the supplied profile, also set
