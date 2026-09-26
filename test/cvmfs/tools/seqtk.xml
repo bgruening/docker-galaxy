@@ -4,7 +4,7 @@
         <requirement type="package" version="1.4">seqtk</requirement>
     </requirements>
     <command detect_errors="exit_code"><![CDATA[
-env | sed -n 's/^SINGULARITY_CONTAINER=//p' > '$runtime' &&
+env | sed -n 's/^SINGULARITY_NAME=//p' > '$runtime' &&
 test -s '$runtime' &&
 seqtk seq -U '$input' > '$output'
     ]]></command>
@@ -13,7 +13,7 @@ seqtk seq -U '$input' > '$output'
     </inputs>
     <outputs>
         <data name="output" format="fasta" label="Uppercase FASTA" />
-        <data name="runtime" format="txt" label="CVMFS container image" />
+        <data name="runtime" format="txt" label="Singularity image name" />
     </outputs>
     <tests>
         <test>
@@ -21,7 +21,7 @@ seqtk seq -U '$input' > '$output'
             <output name="output" file="uppercase.fasta" />
             <output name="runtime">
                 <assert_contents>
-                    <has_line_matching expression="^/cvmfs/singularity\.galaxyproject\.org/all/seqtk:1\.4--[^\s]+$" />
+                    <has_line_matching expression="^seqtk:1\.4--[^\s]+$" />
                 </assert_contents>
             </output>
         </test>

@@ -590,7 +590,8 @@ This boots a disposable appliance with a small `seqtk` test tool. Planemo submit
 through the API using the appliance's Slurm/Singularity destination. The test configuration requires
 a container and resolves images only from `/cvmfs/singularity.galaxyproject.org/all`, preventing
 registry pulls or local image cache fallback. It checks the uppercase FASTA output and the CVMFS
-image path reported inside the tool container. Reports are written to `test-results/cvmfs-tools/`
+image name reported inside the tool container, and Galaxy's job metrics confirm the CVMFS source
+image path and Singularity container type. Reports are written to `test-results/cvmfs-tools/`
 and retained as CI artifacts.
 
 Single Container CI runs this test using its already-built amd64 image. ARM64 CI continues to verify
@@ -1008,7 +1009,7 @@ The project includes local test scripts and CI workflows. Use the matrix below t
 | Slurm | `test/slurm/test.sh` | Docker, Slurm test image | Uses external Slurm container; set `GALAXY_IMAGE=galaxy:test` if needed. |
 | SGE (Grid Engine) | `test/gridengine/test.sh` | Docker, SGE test image | Uses ephemeris container to wait for Galaxy. |
 | CVMFS userspace | `test/cvmfs/test-userspace.sh` | `/dev/fuse` and documented security options | Boots Galaxy and verifies a CVMFS-backed tool-data table through the API. |
-| CVMFS tool execution | `GALAXY_SMOKE_CVMFS_TOOL_TEST=true test/cvmfs/test-userspace.sh` | amd64 Linux, userspace CVMFS options, Planemo 0.75.47 | Executes seqtk through Slurm/Singularity using a CVMFS image; verifies output and runtime image path. |
+| CVMFS tool execution | `GALAXY_SMOKE_CVMFS_TOOL_TEST=true test/cvmfs/test-userspace.sh` | amd64 Linux, userspace CVMFS options, Planemo 0.75.47 | Executes seqtk through Slurm/Singularity using a CVMFS image; verifies output, container image name, and CVMFS source path in job metrics. |
 | CVMFS sidecar | `test/cvmfs/test.sh` | Privileged sidecar | Validates sidecar mount propagation into a consumer container. |
 | FTP/SFTP | `.github/workflows/single.sh` | Docker, sshpass (CI) | FTP and SFTP checks run in CI; local run skips SFTP if `sshpass` is missing. |
 | /export persistence | `startup.sh` / `startup2.sh` | `/export` volume | Export and cache relocation happens during startup; exercised by CI runs. |

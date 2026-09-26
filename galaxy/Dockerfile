@@ -197,7 +197,8 @@ RUN apt-get -qq update \
     # Use the Ubuntu HPC PPA for Slurm 24.11 so libslurm and plugins stay in sync on 24.04.
     && add-apt-repository ppa:ubuntu-hpc/slurm-wlm-24.11 \
     && apt-get -qq update \
-    && apt install -y sudo ca-certificates nano git gridengine-common gridengine-drmaa1.0 libswitch-perl nodejs npm singularity-container uidmap \
+    # Explicit FUSE helpers are required for Singularity's userspace SIF mounts.
+    && apt install -y sudo ca-certificates nano git gridengine-common gridengine-drmaa1.0 libswitch-perl nodejs npm singularity-container squashfuse fuse3 uidmap \
     && apt install -y ansible slurm-wlm libslurm42t64 \
     # Make python3 standard
     && update-alternatives --install /usr/bin/python python /usr/bin/python3 10 \
