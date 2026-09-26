@@ -23,3 +23,8 @@ the self-contained distribution into `/opt/cvmfsexec`. The local
 keeps the launched command in that namespace so Galaxy can switch to its
 service accounts. Update the version, commit, and patch deliberately and test
 amd64 and arm64 images.
+
+The patch also evaluates default configuration snippets in shell order when
+selecting the configuration repository (quoted values and multiple assignments
+are supported), and mounts with `allow_other` so Galaxy and PostgreSQL service
+identities can read repositories mounted by namespace root.

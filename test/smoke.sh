@@ -64,7 +64,21 @@ case "$GALAXY_SMOKE_RUNTIME" in
         ;;
 esac
 
-docker run "${docker_args[@]}" "$GALAXY_SMOKE_IMAGE"
+container_command=()
+if [[ "$GALAXY_SMOKE_RUNTIME" == userspace-cvmfs ]]; then
+    # Run inside the entrypoint's namespaces. docker exec enters the original
+    # container namespaces and cannot see the userspace CVMFS mounts.
+    # shellcheck disable=SC2016
+    container_command=(bash -ec '
+        for identity in "$GALAXY_UID:$GALAXY_GID" "${GALAXY_POSTGRES_UID:-1550}:${GALAXY_POSTGRES_GID:-1550}"; do
+            setpriv --reuid="${identity%:*}" --regid="${identity#*:}" --clear-groups \
+                ls /cvmfs/data.galaxyproject.org/byhand/location/tool_data_table_conf.xml \
+                   /cvmfs/singularity.galaxyproject.org/all >/dev/null
+        done
+        exec /usr/bin/startup
+    ')
+fi
+docker run "${docker_args[@]}" "$GALAXY_SMOKE_IMAGE" "${container_command[@]}"
 
 if ! docker exec "$GALAXY_SMOKE_CONTAINER" \
     /tool_deps/_conda/bin/galaxy-wait \

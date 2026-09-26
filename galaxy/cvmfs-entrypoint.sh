@@ -39,7 +39,7 @@ userspace_prerequisites_available() {
         bash -c 'setpriv --reuid="$1" --regid="$2" --clear-groups true && setpriv --reuid="$3" --regid="$4" --clear-groups true' \
         bash "${GALAXY_UID:-1450}" "${GALAXY_GID:-1450}" \
         "${GALAXY_POSTGRES_UID:-1550}" "${GALAXY_POSTGRES_GID:-1550}" \
-        >/dev/null 2>&1
+        >/dev/null
 }
 
 configure_userspace_cache() {

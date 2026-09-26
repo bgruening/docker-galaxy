@@ -3,7 +3,7 @@ index b78eac7..7d48437 100755
 --- a/cvmfsexec
 +++ b/cvmfsexec
 @@ -245,7 +245,9 @@ export STDINCOPYFD
- 
+
  # Note that within the here document, unprotected $ substitutions are
  #  done by the surrounding shell, and \$ is within the unshare shell
 -unshare -rm $UNSHAREOPTS /bin/bash /dev/stdin "${@:-$SHELL}" <<!EOF-1!
@@ -26,7 +26,7 @@ index b78eac7..7d48437 100755
          elif $USERFUSE; then
              proccmd "\$CMD" "\$PARAM"
 @@ -379,7 +380,7 @@ unshare -rm $UNSHAREOPTS /bin/bash /dev/stdin "${@:-$SHELL}" <<!EOF-1!
- 
+
      # quoting the here document's delimeter makes this nested shell not
      #  interpret $ substitutions, but the previous one still does
 -    \$EXEC unshare -U /bin/bash /dev/stdin "\${@:-$SHELL}" <<'!EOF-2!'
@@ -34,3 +34,31 @@ index b78eac7..7d48437 100755
          #set -x
          #PS4='c\$$+ '
          # now in the user namespace
+--- a/mountrepo
++++ b/mountrepo
+@@ -81,7 +81,15 @@
+ (
+ DEFD_FILES="`find $DIST/etc/cvmfs/default.d -name "*.conf" 2>/dev/null`"
+ if [ -n "$DEFD_FILES" ]; then
+-    CONFIG_REPO="`sed -n 's/^CVMFS_CONFIG_REPOSITORY=//p' $DIST/etc/cvmfs/default.d/*.conf`"
++    # Evaluate trusted client configuration as CVMFS does: last assignment wins,
++    # and shell quotes are syntax rather than part of the repository name.
++    CONFIG_REPO=$(
++        . "$DIST/etc/cvmfs/default.conf"
++        for config in "$DIST"/etc/cvmfs/default.d/*.conf; do
++            . "$config"
++        done
++        printf '%s' "${CVMFS_CONFIG_REPOSITORY:-}"
++    )
+ fi
+ # these are used in some configuration repository includes, set them
+ #   for procsource
+@@ -133,7 +141,7 @@
+
+ ) > $CONFFILE
+
+-OPTS=""
++OPTS=",allow_other"
+ if grep -q ^CVMFS_DEBUGLOG=. $CONFFILE; then
+     OPTS="$OPTS,debug"
+ fi

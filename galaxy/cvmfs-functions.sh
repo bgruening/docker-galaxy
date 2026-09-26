@@ -7,7 +7,9 @@ cvmfs_set_repositories() {
 }
 
 cvmfs_repository_available() {
-    [[ -r "/cvmfs/$1/.cvmfspublished" ]]
+    # .cvmfspublished is a server manifest, not a file in the FUSE view.
+    # Require a mount and a successful directory read, excluding placeholders.
+    mountpoint -q "/cvmfs/$1" && ls "/cvmfs/$1" >/dev/null 2>&1
 }
 
 cvmfs_repository_requested() {

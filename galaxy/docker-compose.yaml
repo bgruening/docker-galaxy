@@ -51,7 +51,7 @@ services:
     healthcheck:
       test:
         - CMD-SHELL
-        - for repo in $$(printf '%s' "$$CVMFS_REPOSITORIES" | tr ',' ' '); do test -r "/cvmfs/$$repo/.cvmfspublished" || exit 1; done
+        - for repo in $$(printf '%s' "$$CVMFS_REPOSITORIES" | tr ',' ' '); do mountpoint -q "/cvmfs/$$repo" && ls "/cvmfs/$$repo" >/dev/null || exit 1; done
       interval: 2s
       timeout: 2s
       retries: 60
