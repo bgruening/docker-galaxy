@@ -376,6 +376,27 @@ docker run -d -p 8080:80 -p 8021:21 -p 4002:4002 \
 ```
 
 
+### Verify Interactive Tool service access
+
+On amd64 Linux with Docker and a Python environment containing `planemo==0.75.47`,
+test a locally built appliance image with:
+
+```sh
+GALAXY_IT_TEST_IMAGE=galaxy:test bash test/interactive/test-interactive.sh
+```
+
+This starts a separate privileged appliance on port 8082, launches a minimal Python HTTP
+Interactive Tool through the Galaxy API, and checks its response through nginx and
+`gx-it-proxy`. It preserves the generated subdomain in the HTTP Host header, so wildcard
+DNS is unnecessary. It then stops the tool through its entry-point API and checks the
+job state, proxy removal, and nested Docker container removal. The appliance is removed
+when the script exits. Results are written to `test-results/interactive-tools/`.
+
+The service harness uses the dependencies installed with Planemo and follows its IT
+serve-test approach; it does not run `planemo test` output assertions. This covers the
+privileged Docker setup and domain-based entry points. Jupyter/RStudio behavior,
+WebSockets, path-based entry points, and nonprivileged operation need separate coverage.
+
 ## Using passive mode FTP or SFTP <a name="Using-passive-mode-FTP-or-SFTP" /> [[toc]](#toc)
 
 By default, FTP servers running inside of docker containers are not accessible via passive mode FTP, due to not being able to expose extra ports. To circumvent this, you can use the `--net=host` option to allow Docker to directly open ports on the host server:

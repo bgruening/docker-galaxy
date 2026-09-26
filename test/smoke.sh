@@ -9,6 +9,7 @@ GALAXY_SMOKE_EXPECTED_ARCH=${GALAXY_SMOKE_EXPECTED_ARCH:-}
 GALAXY_SMOKE_RUNTIME=${GALAXY_SMOKE_RUNTIME:-privileged}
 GALAXY_SMOKE_API_KEY=${GALAXY_SMOKE_API_KEY:-fakekey}
 GALAXY_SMOKE_CVMFS_TOOL_TEST=${GALAXY_SMOKE_CVMFS_TOOL_TEST:-false}
+GALAXY_SMOKE_IT_TEST=${GALAXY_SMOKE_IT_TEST:-false}
 GALAXY_SMOKE_URL="http://127.0.0.1:${GALAXY_SMOKE_PORT}"
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 
@@ -81,6 +82,22 @@ if [[ "$GALAXY_SMOKE_CVMFS_TOOL_TEST" == true ]]; then
 fi
 
 container_command=()
+if [[ "$GALAXY_SMOKE_IT_TEST" == true ]]; then
+    if [[ "$GALAXY_SMOKE_RUNTIME" != privileged || "$GALAXY_SMOKE_CVMFS_TOOL_TEST" == true ]]; then
+        echo "Interactive Tool testing requires a separate privileged smoke run." >&2
+        exit 1
+    fi
+    docker_args+=(
+        -v "$repo_root/test/interactive/tools:/interactive-tool-test:ro"
+        -e GALAXY_CONFIG_TOOL_CONFIG_FILE=/interactive-tool-test/tool_conf.xml
+        -e GALAXY_INTERACTIVE_TOOLS_CONFIG_FILE=/interactive-tool-test/empty_tool_conf.xml
+        -e GALAXY_CONFIG_CONTAINER_RESOLVERS_CONFIG_FILE=/interactive-tool-test/container_resolvers.yml
+        -e GALAXY_DESTINATIONS_DEFAULT=local_docker
+        -e GALAXY_CONFIG_CONDA_AUTO_INSTALL=False
+        -e GALAXY_CONFIG_INTERACTIVETOOLS_UPSTREAM_PROXY=True
+        -e GALAXY_DOMAIN=localhost
+    )
+fi
 if [[ "$GALAXY_SMOKE_RUNTIME" == userspace-cvmfs ]]; then
     # Run inside the entrypoint's namespaces. docker exec enters the original
     # container namespaces and cannot see the userspace CVMFS mounts.
@@ -146,6 +163,22 @@ if [[ "$GALAXY_SMOKE_CVMFS_TOOL_TEST" == true ]]; then
     GALAXY_CVMFS_TEST_URL="$GALAXY_SMOKE_URL" \
     GALAXY_CVMFS_TEST_API_KEY="$GALAXY_SMOKE_API_KEY" \
         bash "$repo_root/test/cvmfs/test-tool-execution.sh"
+fi
+
+if [[ "$GALAXY_SMOKE_IT_TEST" == true ]]; then
+    python3 "$repo_root/test/interactive/test-service.py" \
+        "$GALAXY_SMOKE_URL" "$GALAXY_SMOKE_API_KEY"
+    # The tool's nested Docker container must also disappear after stopping it.
+    for ((attempt = 0; attempt < 30; attempt++)); do
+        remaining=$(docker exec "$GALAXY_SMOKE_CONTAINER" docker ps -aq \
+            --filter ancestor=python:3.12.12-slim-bookworm)
+        [[ -z "$remaining" ]] && break
+        sleep 2
+    done
+    if [[ -n "$remaining" ]]; then
+        echo "Interactive Tool Docker container was not removed after stopping the job." >&2
+        exit 1
+    fi
 fi
 
 echo "Galaxy is ready at ${GALAXY_SMOKE_URL}."

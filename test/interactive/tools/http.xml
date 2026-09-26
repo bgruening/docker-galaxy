@@ -1,0 +1,18 @@
+<tool id="appliance_it_http" name="Appliance HTTP Interactive Tool" tool_type="interactive" version="0.1.0" profile="23.0">
+    <requirements>
+        <container type="docker">python:3.12.12-slim-bookworm</container>
+    </requirements>
+    <entry_points>
+        <entry_point name="Appliance smoke service" requires_domain="True">
+            <port>8000</port>
+            <url>/</url>
+        </entry_point>
+    </entry_points>
+    <command detect_errors="exit_code"><![CDATA[
+mkdir -p service && printf 'galaxy-appliance-it-ok\n' > service/index.html &&
+python -m http.server 8000 --bind 0.0.0.0 --directory service
+    ]]></command>
+    <inputs />
+    <outputs />
+    <help>A minimal HTTP service for testing the appliance's Interactive Tools proxy.</help>
+</tool>
