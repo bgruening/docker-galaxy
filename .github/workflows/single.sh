@@ -133,6 +133,14 @@ docker buildx build \
     galaxy/
 #container_size_check   quay.io/bgruening/galaxy  1500
 
+# Check userspace mounting before the lengthy Bioblend suite.
+if [[ "${CI:-}" == "true" ]]; then
+    sudo apparmor_parser -r galaxy/cvmfs-apparmor.profile
+    GALAXY_SMOKE_APPARMOR_PROFILE=galaxy-cvmfs-userspace \
+    GALAXY_CVMFS_TEST_IMAGE="$DOCKER_RUN_CONTAINER" \
+        bash test/cvmfs/test-userspace.sh
+fi
+
 docker rm -f galaxy httpstest || true
 mkdir -p local_folder
 docker run -d -p 8080:80 -p 8021:21 -p 8022:22 \
@@ -284,10 +292,4 @@ fi
 
 docker stop galaxy
 docker rm -f galaxy
-if [[ "${CI:-}" == "true" ]]; then
-    sudo apparmor_parser -r galaxy/cvmfs-apparmor.profile
-    GALAXY_SMOKE_APPARMOR_PROFILE=galaxy-cvmfs-userspace \
-    GALAXY_CVMFS_TEST_IMAGE="$DOCKER_RUN_CONTAINER" \
-        bash test/cvmfs/test-userspace.sh
-fi
 docker rmi -f $DOCKER_RUN_CONTAINER || true

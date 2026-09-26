@@ -53,6 +53,7 @@ jobs:
 
       - name: Test userspace CVMFS on ARM64
         run: |
+          # Ubuntu denies capabilities in namespaces under plain unconfined.
           sudo apparmor_parser -r galaxy/cvmfs-apparmor.profile
           test/cvmfs/test-userspace.sh
         env:
