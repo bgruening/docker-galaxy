@@ -11,6 +11,11 @@ GALAXY_SMOKE_API_KEY=${GALAXY_SMOKE_API_KEY:-fakekey}
 GALAXY_SMOKE_CVMFS_TOOL_TEST=${GALAXY_SMOKE_CVMFS_TOOL_TEST:-false}
 GALAXY_SMOKE_IT_TEST=${GALAXY_SMOKE_IT_TEST:-false}
 GALAXY_SMOKE_URL="http://127.0.0.1:${GALAXY_SMOKE_PORT}"
+if [[ "$GALAXY_SMOKE_IT_TEST" == true ]]; then
+    # Galaxy derives IT subdomains from the API request host. Keep this aligned
+    # with GALAXY_DOMAIN and nginx's *.interactivetool.localhost virtual host.
+    GALAXY_SMOKE_URL="http://localhost:${GALAXY_SMOKE_PORT}"
+fi
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 
 userspace_cache_dir=""
