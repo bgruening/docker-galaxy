@@ -126,6 +126,27 @@ RUN apt-get -qq update \
     && cp -a /usr/local/lib/libdrmaa.so* /out/ \
     && rm -rf /var/lib/apt/lists/* /tmp/slurm-drmaa
 
+
+# Build a self-contained CVMFS userspace client. The runtime image still keeps
+# the native CVMFS client for privileged/autofs installations.
+FROM ubuntu:24.04 AS build_cvmfsexec
+
+ARG CVMFSEXEC_VERSION=4.54
+ARG CVMFSEXEC_COMMIT=5d2f9154e2f252b6fdda8bc1674b7ad4dffa6559
+ARG CVMFS_USERSPACE_VERSION=2.14.1
+
+COPY cvmfsexec-multi-user.patch /tmp/cvmfsexec-multi-user.patch
+
+RUN apt-get -qq update \
+    && apt-get install -y --no-install-recommends ca-certificates cpio curl git patch rpm2cpio \
+    && git clone --branch "v${CVMFSEXEC_VERSION}" --depth 1 \
+        https://github.com/cvmfs/cvmfsexec.git /opt/cvmfsexec \
+    && cd /opt/cvmfsexec \
+    && test "$(git rev-parse HEAD)" = "$CVMFSEXEC_COMMIT" \
+    && git apply /tmp/cvmfsexec-multi-user.patch \
+    && ./makedist -v "$CVMFS_USERSPACE_VERSION" none \
+    && rm -rf .git /tmp/cvmfsexec-multi-user.patch /var/lib/apt/lists/*
+
 FROM ubuntu:24.04 AS galaxy_cluster_base
 
 ENV GALAXY_ROOT_DIR=/galaxy \
@@ -176,7 +197,7 @@ RUN apt-get -qq update \
     # Use the Ubuntu HPC PPA for Slurm 24.11 so libslurm and plugins stay in sync on 24.04.
     && add-apt-repository ppa:ubuntu-hpc/slurm-wlm-24.11 \
     && apt-get -qq update \
-    && apt install -y sudo ca-certificates nano git gridengine-common gridengine-drmaa1.0 libswitch-perl nodejs npm singularity-container \
+    && apt install -y sudo ca-certificates nano git gridengine-common gridengine-drmaa1.0 libswitch-perl nodejs npm singularity-container uidmap \
     && apt install -y ansible slurm-wlm libslurm42t64 \
     # Make python3 standard
     && update-alternatives --install /usr/bin/python python /usr/bin/python3 10 \
@@ -191,6 +212,9 @@ RUN apt-get -qq update \
     # Create the postgres user before apt-get does (with the configured UID/GID) to facilitate sharing $EXPORT_DIR/postgresql with non-Linux hosts
     && groupadd -r postgres -g $GALAXY_POSTGRES_GID \
     && adduser --system --quiet --home /var/lib/postgresql --no-create-home --shell /bin/bash --gecos "" --uid $GALAXY_POSTGRES_UID --gid $GALAXY_POSTGRES_GID postgres \
+    # Give cvmfsexec a contiguous subordinate range that covers Galaxy's service accounts.
+    && printf 'root:1:65535\n' > /etc/subuid \
+    && printf 'root:1:65535\n' > /etc/subgid \
     && mkdir -p $GALAXY_ROOT_DIR $GALAXY_VIRTUAL_ENV $GALAXY_CONFIG_DIR $GALAXY_CONFIG_DIR/web $GALAXY_LOGS_DIR $EXPORT_DIR $EXPORT_DIR/container_cache/singularity/mulled \
     && chown -R $GALAXY_USER:$GALAXY_USER $GALAXY_ROOT_DIR $GALAXY_VIRTUAL_ENV $GALAXY_CONFIG_DIR $GALAXY_LOGS_DIR $EXPORT_DIR \
     && /usr/bin/common_cleanup.sh
@@ -289,6 +313,12 @@ COPY --chown=$GALAXY_USER:$GALAXY_USER --from=build_galaxy $GALAXY_VIRTUAL_ENV $
 COPY --chown=root:root --from=build_galaxy /usr/local/lib/libjemalloc.so.2 /usr/local/lib/libjemalloc.so.2
 COPY --chown=$GALAXY_USER:$GALAXY_USER --from=build_miniforge $GALAXY_HOME $GALAXY_HOME
 COPY --chown=$GALAXY_USER:$GALAXY_USER --from=build_miniforge /etc/profile.d/conda.sh /etc/profile.d/conda.sh
+COPY --from=build_cvmfsexec /opt/cvmfsexec /opt/cvmfsexec
+
+# Reuse the Galaxy CVMFS repository configuration and keys with the bundled
+# userspace client. Cache settings are applied by cvmfs-entrypoint at runtime.
+RUN rm -rf /opt/cvmfsexec/dist/etc/cvmfs \
+    && cp -a /etc/cvmfs /opt/cvmfsexec/dist/etc/cvmfs
 
 ADD --chown=$GALAXY_USER:$GALAXY_USER ./sample_tool_list.yaml $GALAXY_HOME/ephemeris/sample_tool_list.yaml
 
@@ -424,6 +454,8 @@ VOLUME ["/export/", "/data/", "/var/lib/docker"]
 
 ADD startup.sh /usr/bin/startup
 ADD startup2.sh /usr/bin/startup2
+COPY --chmod=0755 cvmfs-entrypoint.sh /usr/bin/cvmfs-entrypoint
+COPY --chmod=0644 cvmfs-functions.sh /usr/lib/docker-galaxy/cvmfs-functions.sh
 ENV SUPERVISOR_POSTGRES_AUTOSTART=False \
     SUPERVISOR_MANAGE_POSTGRES=True \
     SUPERVISOR_MANAGE_CRON=True \
@@ -440,7 +472,7 @@ ENV SUPERVISOR_POSTGRES_AUTOSTART=False \
     STARTUP_EXPORT_USER_FILES=True \
     LOAD_GALAXY_CONDITIONAL_DEPENDENCIES=True
 
-ENTRYPOINT ["/sbin/tini", "--"]
+ENTRYPOINT ["/sbin/tini", "--", "/usr/bin/cvmfs-entrypoint"]
 
 # Autostart script that is invoked during container start
 CMD ["/usr/bin/startup"]

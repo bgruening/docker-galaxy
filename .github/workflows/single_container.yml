@@ -1,8 +1,16 @@
 name: Single Container Test
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+    tags: ['*']
+  pull_request:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   build_and_test:
     runs-on: ubuntu-latest
+    timeout-minutes: 120
     strategy:
       matrix:
         python-version: ['3.10']

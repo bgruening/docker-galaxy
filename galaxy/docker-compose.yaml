@@ -12,8 +12,13 @@ services:
       - GALAXY_DESTINATIONS_DEFAULT=slurm_cluster_docker
       - GALAXY_CONFIG_BRAND=${GALAXY_CONFIG_BRAND:-My own Galaxy flavour}
       - GALAXY_AUTO_UPDATE_DB=True
+      - CVMFS_MODE=${CVMFS_MODE:-auto}
     hostname: galaxy-server
     privileged: True
+    depends_on:
+      cvmfs:
+        condition: service_healthy
+        required: false
     ports:
       - "8080:80"
       - "9002:9002"
@@ -43,6 +48,13 @@ services:
     environment:
       - CVMFS_REPOSITORIES=data.galaxyproject.org,singularity.galaxyproject.org
       - CVMFS_CACHE_BASE=/var/lib/cvmfs
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - for repo in $$(printf '%s' "$$CVMFS_REPOSITORIES" | tr ',' ' '); do mountpoint -q "/cvmfs/$$repo" && ls "/cvmfs/$$repo" >/dev/null || exit 1; done
+      interval: 2s
+      timeout: 2s
+      retries: 60
     volumes:
       - type: bind
         source: ${CVMFS_MOUNT_DIR:-/cvmfs}

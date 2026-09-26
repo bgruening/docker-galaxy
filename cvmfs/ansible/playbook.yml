@@ -4,6 +4,9 @@
   gather_facts: true
   vars:
     cvmfs_role: client
+    # This image is Ubuntu 24.04; the role's LTS fact check does not recognize
+    # Ansible's ansible_lsb.description field, even with lsb-release installed.
+    cvmfs_apt_distribution: noble
     galaxy_cvmfs_repos_enabled: true
     cvmfs_http_proxies:
       - DIRECT

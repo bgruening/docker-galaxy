@@ -7,10 +7,16 @@ on:
       - "galaxy/**"
       - ".github/workflows/galaxy-arm64.yml"
       - "test/smoke.sh"
+      - "test/cvmfs/test-userspace.sh"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-arm64:
     runs-on: ubuntu-24.04-arm
+    timeout-minutes: 120
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -44,3 +50,13 @@ jobs:
         env:
           GALAXY_SMOKE_IMAGE: quay.io/bgruening/galaxy:ci-arm64
           GALAXY_SMOKE_EXPECTED_ARCH: aarch64
+
+      - name: Test userspace CVMFS on ARM64
+        run: |
+          # Ubuntu denies capabilities in namespaces under plain unconfined.
+          sudo apparmor_parser -r galaxy/cvmfs-apparmor.profile
+          test/cvmfs/test-userspace.sh
+        env:
+          GALAXY_SMOKE_APPARMOR_PROFILE: galaxy-cvmfs-userspace
+          GALAXY_CVMFS_TEST_IMAGE: quay.io/bgruening/galaxy:ci-arm64
+          GALAXY_CVMFS_TEST_EXPECTED_ARCH: aarch64

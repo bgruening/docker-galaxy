@@ -352,51 +352,17 @@ else
     log_warn "Container routing: no Docker/Singularity detected; using ${dest_default}"
 fi
 
-cvmfs_repos="${CVMFS_REPOSITORIES:-data.galaxyproject.org singularity.galaxyproject.org}"
-cvmfs_repos="${cvmfs_repos//,/ }"
-cvmfs_autofs_configured=false
-if [ -f /etc/auto.cvmfs ] || [ -f /etc/auto.master.d/cvmfs.autofs ]; then
-    cvmfs_autofs_configured=true
-fi
+# shellcheck source-path=SCRIPTDIR
+# shellcheck source=cvmfs-functions.sh
+source /usr/lib/docker-galaxy/cvmfs-functions.sh
+cvmfs_set_repositories
 
+# This unmount is part of the privileged Docker-in-Docker setup, not CVMFS.
 if $PRIVILEGED; then
-    log_info "Configuring CVMFS mounts (privileged)"
     umount /var/lib/docker
-
-    if command -v mount.cvmfs >/dev/null 2>&1; then
-        chmod 666 /dev/fuse || true
-        if $cvmfs_autofs_configured; then
-            log_info "CVMFS autofs configured; mounts will appear on first access after services start."
-        else
-            for repo in $cvmfs_repos; do
-                repo_dir="/cvmfs/$repo"
-                mkdir -p "$repo_dir"
-                if ! mountpoint -q "$repo_dir"; then
-                    log_info "Mounting CVMFS repo $repo"
-                    if ! mount -t cvmfs "$repo" "$repo_dir"; then
-                        sleep 2
-                        mount -t cvmfs "$repo" "$repo_dir" || log_warn "Failed to mount CVMFS repo $repo"
-                    fi
-                fi
-            done
-        fi
-    else
-        log_info "CVMFS client not available; install CVMFS or use the sidecar via docker-compose --profile cvmfs."
-    fi
-else
-    log_info "CVMFS mounts disabled (not running privileged). Use --privileged or the CVMFS sidecar in docker-compose."
 fi
 
-if ! mountpoint -q /cvmfs 2>/dev/null; then
-    for repo in $cvmfs_repos; do
-        repo_dir="/cvmfs/$repo"
-        mkdir -p "$repo_dir"
-        if [ "$repo" = "singularity.galaxyproject.org" ]; then
-            mkdir -p "$repo_dir/all"
-        fi
-    done
-    chown -R "$GALAXY_USER:$GALAXY_USER" /cvmfs
-fi
+cvmfs_prepare_mounts autofs
 
 show_runtime_summary
 show_galaxy_env_summary
@@ -813,10 +779,9 @@ if [[ ! -z $SUPERVISOR_POSTGRES_AUTOSTART ]]; then
     fi
 fi
 
-if $PRIVILEGED; then
-    # In privileged mode autofs and CVMFS may be available, so only append existing files.
-    export GALAXY_CONFIG_TOOL_DATA_TABLE_CONFIG_PATH="${GALAXY_CONFIG_TOOL_DATA_TABLE_CONFIG_PATH},/cvmfs/data.galaxyproject.org/byhand/location/tool_data_table_conf.xml,/cvmfs/data.galaxyproject.org/managed/location/tool_data_table_conf.xml"
+cvmfs_enable_tool_data
 
+if $PRIVILEGED; then
     log_info "Enabling Galaxy Interactive Tools"
     export GALAXY_CONFIG_INTERACTIVETOOLS_ENABLE=True
     export GALAXY_CONFIG_TOOL_CONFIG_FILE="$GALAXY_CONFIG_TOOL_CONFIG_FILE,$GALAXY_INTERACTIVE_TOOLS_CONFIG_FILE"

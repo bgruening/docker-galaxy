@@ -508,16 +508,91 @@ This is achieved by connecting to Galaxy's CernVM filesystem (CVMFS) at `cvmfs-c
 The CVMFS capability doesn't add to the size of the Docker image, but when running, CVMFS maintains
 a cache to keep the most recently used data on the local disk.
 
-*Note*: for CVMFS directories to be mounted-on-demand with `autofs`, you must launch Docker as `--privileged`.
-If privileged mode is not an option, use the optional CVMFS sidecar in `galaxy/docker-compose.yaml`:
+### Userspace CVMFS (recommended)
+
+The image can mount CVMFS without `--privileged` and without a sidecar. It needs the FUSE device and
+the following security relaxations required by `cvmfsexec`:
+
+```sh
+docker run --rm -p 8080:80 \
+    --device /dev/fuse \
+    --security-opt apparmor=unconfined \
+    --security-opt seccomp=unconfined \
+    --security-opt systempaths=unconfined \
+    -e CVMFS_MODE=userspace \
+    -v galaxy-storage:/export \
+    quay.io/bgruening/galaxy
+```
+
+`apparmor=unconfined` disables Docker's AppArmor confinement where AppArmor is enabled, and
+`seccomp=unconfined` disables Docker's syscall filter. These are broad security relaxations, although the
+container still receives substantially less authority than `--privileged`. Do not add
+`no-new-privileges`: startup uses `sudo`, and namespace setup requires the setuid `newuidmap` and
+`newgidmap` helpers.
+
+On Ubuntu 24.04 and newer, the host's unprivileged user namespace policy can deny
+service UID switches even with `apparmor=unconfined` (typically `setpriv: setresuid
+failed: Operation not permitted`). Install the supplied profile on the Docker host:
+
+```sh
+sudo install -m 0644 galaxy/cvmfs-apparmor.profile /etc/apparmor.d/galaxy-cvmfs-userspace
+sudo apparmor_parser -r /etc/apparmor.d/galaxy-cvmfs-userspace
+```
+
+Then replace `--security-opt apparmor=unconfined` above with
+`--security-opt apparmor=galaxy-cvmfs-userspace`. The profile is broadly unconfined
+and explicitly permits capabilities inside user namespaces; it leaves the host's
+policy for other applications intact. See Ubuntu's
+[user namespace policy](https://discourse.ubuntu.com/t/ubuntu-24-04-lts-noble-numbat-release-notes/39890).
+For the smoke test below, also set
+`GALAXY_SMOKE_APPARMOR_PROFILE=galaxy-cvmfs-userspace` when using this profile.
+
+The on-demand cache is stored in `/export/cvmfs-cache` by default, so `/export` should use fast local
+storage. Do not share one cache directory between concurrently running containers, and exclude this
+disposable cache directory from backups of the `/export` volume.
+
+To boot Galaxy and verify the same reference-data and tool-data paths exercised by CI,
+run the repository smoke test against a locally built image:
+
+```sh
+docker build -t galaxy-cvmfs galaxy
+GALAXY_SMOKE_IMAGE=galaxy-cvmfs \
+GALAXY_SMOKE_RUNTIME=userspace-cvmfs \
+test/smoke.sh
+```
+
+Userspace mounts live in the entrypoint's mount namespace and are inherited by Galaxy and the jobs it
+launches. A separate `docker exec` process cannot browse those mounts directly.
+
+### CVMFS modes
+
+Set `CVMFS_MODE` to select the runtime behavior:
+
+| Mode | Behavior |
+| --- | --- |
+| `auto` | Uses an existing external mount, preserves the privileged native path, or selects userspace CVMFS when its prerequisites are available. |
+| `userspace` | Requires the FUSE/security options above and fails with an actionable error if they are missing. |
+| `system` | Uses the image's native privileged/autofs setup. |
+| `external` | Waits for repositories mounted by the Compose sidecar or host. |
+| `disabled` | Starts Galaxy without CVMFS reference data. |
+
+The default repositories are `data.galaxyproject.org` and `singularity.galaxyproject.org`. Override them
+with comma-separated `CVMFS_REPOSITORIES`. `CVMFS_CACHE_BASE`, `CVMFS_QUOTA_LIMIT`, and
+`CVMFS_EXTERNAL_WAIT` configure the cache path, cache quota in MB, and external-mount wait in seconds.
+
+### Privileged and sidecar compatibility modes
+
+Launching with `--privileged` keeps the existing native CVMFS/autofs behavior. Where FUSE cannot be
+exposed to the Galaxy container, the optional sidecar in `galaxy/docker-compose.yaml` remains available:
 
 ```sh
 cd galaxy
-CVMFS_MOUNT_DIR=/cvmfs EXPORT_DIR=./export docker compose --profile cvmfs up
+CVMFS_MODE=external CVMFS_MOUNT_DIR=/cvmfs EXPORT_DIR=./export docker compose --profile cvmfs up
 ```
 
 This starts a dedicated CVMFS container that mounts the repositories and shares `/cvmfs` with the Galaxy
-container. The CVMFS cache is persisted in `${EXPORT_DIR}/cvmfs-cache`.
+container. The CVMFS cache is persisted in `${EXPORT_DIR}/cvmfs-cache`. The optional dependency used by
+this profile requires Docker Compose 2.20.2 or newer.
 
 
 ## Personalize your Galaxy <a name="Personalize-your-Galaxy" /> [[toc]](#toc)
@@ -899,7 +974,8 @@ The project includes local test scripts and CI workflows. Use the matrix below t
 | Bioblend | `test/bioblend/test.sh` | Running Galaxy container | Uses a Bioblend test image against Galaxy. |
 | Slurm | `test/slurm/test.sh` | Docker, Slurm test image | Uses external Slurm container; set `GALAXY_IMAGE=galaxy:test` if needed. |
 | SGE (Grid Engine) | `test/gridengine/test.sh` | Docker, SGE test image | Uses ephemeris container to wait for Galaxy. |
-| CVMFS sidecar | `test/cvmfs/test.sh` | Privileged | Builds and validates mount propagation from sidecar. |
+| CVMFS userspace | `test/cvmfs/test-userspace.sh` | `/dev/fuse` and documented security options | Boots Galaxy and verifies a CVMFS-backed tool-data table through the API. |
+| CVMFS sidecar | `test/cvmfs/test.sh` | Privileged sidecar | Validates sidecar mount propagation into a consumer container. |
 | FTP/SFTP | `.github/workflows/single.sh` | Docker, sshpass (CI) | FTP and SFTP checks run in CI; local run skips SFTP if `sshpass` is missing. |
 | /export persistence | `startup.sh` / `startup2.sh` | `/export` volume | Export and cache relocation happens during startup; exercised by CI runs. |
 | HTTPS/TLS | `.github/workflows/single.sh` | Docker | Uses `curl` and `openssl s_client` against port 443. |
@@ -911,7 +987,7 @@ The project includes local test scripts and CI workflows. Use the matrix below t
 
 Notes:
 - If `/tmp` is small in CI, set `TMPDIR=/var/tmp` for test scripts.
-- CVMFS sidecar CI builds/pushes on tags; branch pushes run tests only when CVMFS paths change.
+- CVMFS sidecar CI tests pull requests that change sidecar paths and builds/pushes from `main` and tags.
 
 
 
