@@ -68,6 +68,7 @@ case "$CVMFS_MODE" in
         if ! userspace_prerequisites_available; then
             echo "CVMFS userspace mode requires /dev/fuse, newuidmap/newgidmap, and subordinate ID mappings that cover the Galaxy service accounts." >&2
             echo "See the CVMFS section in README.md for the required Docker options." >&2
+            echo "On Ubuntu 24.04+, use the supplied galaxy-cvmfs-userspace AppArmor profile to permit service UID switches." >&2
             exit 1
         fi
         CVMFS_RESOLVED_MODE=userspace

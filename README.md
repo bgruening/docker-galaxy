@@ -530,6 +530,23 @@ container still receives substantially less authority than `--privileged`. Do no
 `no-new-privileges`: startup uses `sudo`, and namespace setup requires the setuid `newuidmap` and
 `newgidmap` helpers.
 
+On Ubuntu 24.04 and newer, the host's unprivileged user namespace policy can deny
+service UID switches even with `apparmor=unconfined` (typically `setpriv: setresuid
+failed: Operation not permitted`). Install the supplied profile on the Docker host:
+
+```sh
+sudo install -m 0644 galaxy/cvmfs-apparmor.profile /etc/apparmor.d/galaxy-cvmfs-userspace
+sudo apparmor_parser -r /etc/apparmor.d/galaxy-cvmfs-userspace
+```
+
+Then replace `--security-opt apparmor=unconfined` above with
+`--security-opt apparmor=galaxy-cvmfs-userspace`. The profile is broadly unconfined
+and explicitly permits capabilities inside user namespaces; it leaves the host's
+policy for other applications intact. See Ubuntu's
+[user namespace policy](https://discourse.ubuntu.com/t/ubuntu-24-04-lts-noble-numbat-release-notes/39890).
+For the smoke test below, also set
+`GALAXY_SMOKE_APPARMOR_PROFILE=galaxy-cvmfs-userspace` when using this profile.
+
 The on-demand cache is stored in `/export/cvmfs-cache` by default, so `/export` should use fast local
 storage. Do not share one cache directory between concurrently running containers, and exclude this
 disposable cache directory from backups of the `/export` volume.

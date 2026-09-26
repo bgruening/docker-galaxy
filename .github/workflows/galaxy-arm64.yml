@@ -52,7 +52,10 @@ jobs:
           GALAXY_SMOKE_EXPECTED_ARCH: aarch64
 
       - name: Test userspace CVMFS on ARM64
-        run: test/cvmfs/test-userspace.sh
+        run: |
+          sudo apparmor_parser -r galaxy/cvmfs-apparmor.profile
+          test/cvmfs/test-userspace.sh
         env:
+          GALAXY_SMOKE_APPARMOR_PROFILE: galaxy-cvmfs-userspace
           GALAXY_CVMFS_TEST_IMAGE: quay.io/bgruening/galaxy:ci-arm64
           GALAXY_CVMFS_TEST_EXPECTED_ARCH: aarch64

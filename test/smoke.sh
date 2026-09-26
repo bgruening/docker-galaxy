@@ -51,7 +51,7 @@ case "$GALAXY_SMOKE_RUNTIME" in
         userspace_cache_dir=$(mktemp -d)
         docker_args+=(
             --device /dev/fuse
-            --security-opt apparmor=unconfined
+            --security-opt "apparmor=${GALAXY_SMOKE_APPARMOR_PROFILE:-unconfined}"
             --security-opt seccomp=unconfined
             --security-opt systempaths=unconfined
             -e CVMFS_MODE=userspace
