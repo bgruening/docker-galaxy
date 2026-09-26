@@ -564,6 +564,39 @@ test/smoke.sh
 Userspace mounts live in the entrypoint's mount namespace and are inherited by Galaxy and the jobs it
 launches. A separate `docker exec` process cannot browse those mounts directly.
 
+In userspace CVMFS mode, startup selects the `slurm_cluster_singularity` destination when Singularity
+is installed and the default destination is unset or still `slurm_cluster`. Jobs use `--userns` to
+avoid the setuid execution path inside the CVMFS user namespace. Additional options can be supplied
+with `GALAXY_SINGULARITY_RUN_EXTRA_ARGUMENTS`; startup preserves them and adds `--userns`.
+Explicit destination overrides are preserved.
+
+#### Verify CVMFS-backed tool execution
+
+On an amd64 Linux host with the security configuration above and Planemo 0.75.47 installed in a
+Python virtual environment, run:
+
+```sh
+GALAXY_SMOKE_IMAGE=galaxy-cvmfs \
+GALAXY_SMOKE_RUNTIME=userspace-cvmfs \
+GALAXY_SMOKE_CVMFS_TOOL_TEST=true \
+test/smoke.sh
+```
+
+On Ubuntu hosts using the supplied profile, also set
+`GALAXY_SMOKE_APPARMOR_PROFILE=galaxy-cvmfs-userspace`. Set `GALAXY_CVMFS_TEST_PLANEMO` to the
+Planemo executable's path if it is not on `PATH`.
+
+This boots a disposable appliance with a small `seqtk` test tool. Planemo submits a real Galaxy job
+through the API using the appliance's Slurm/Singularity destination. The test configuration requires
+a container and resolves images only from `/cvmfs/singularity.galaxyproject.org/all`, preventing
+registry pulls or local image cache fallback. It checks the uppercase FASTA output and the CVMFS
+image path reported inside the tool container. Reports are written to `test-results/cvmfs-tools/`
+and retained as CI artifacts.
+
+Single Container CI runs this test using its already-built amd64 image. ARM64 CI continues to verify
+userspace mounts, reference tables, and cache persistence; native ARM tool-container execution is a
+separate follow-up.
+
 ### CVMFS modes
 
 Set `CVMFS_MODE` to select the runtime behavior:
@@ -975,6 +1008,7 @@ The project includes local test scripts and CI workflows. Use the matrix below t
 | Slurm | `test/slurm/test.sh` | Docker, Slurm test image | Uses external Slurm container; set `GALAXY_IMAGE=galaxy:test` if needed. |
 | SGE (Grid Engine) | `test/gridengine/test.sh` | Docker, SGE test image | Uses ephemeris container to wait for Galaxy. |
 | CVMFS userspace | `test/cvmfs/test-userspace.sh` | `/dev/fuse` and documented security options | Boots Galaxy and verifies a CVMFS-backed tool-data table through the API. |
+| CVMFS tool execution | `GALAXY_SMOKE_CVMFS_TOOL_TEST=true test/cvmfs/test-userspace.sh` | amd64 Linux, userspace CVMFS options, Planemo 0.75.47 | Executes seqtk through Slurm/Singularity using a CVMFS image; verifies output and runtime image path. |
 | CVMFS sidecar | `test/cvmfs/test.sh` | Privileged sidecar | Validates sidecar mount propagation into a consumer container. |
 | FTP/SFTP | `.github/workflows/single.sh` | Docker, sshpass (CI) | FTP and SFTP checks run in CI; local run skips SFTP if `sshpass` is missing. |
 | /export persistence | `startup.sh` / `startup2.sh` | `/export` volume | Export and cache relocation happens during startup; exercised by CI runs. |

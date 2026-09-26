@@ -23,6 +23,7 @@
 
         {% if container_type == 'singularity' %}
             <param id="singularity_enabled">true</param>
+            <param id="singularity_run_extra_arguments" from_environ="GALAXY_SINGULARITY_RUN_EXTRA_ARGUMENTS"></param>
             <param id="singularity_sudo" from_environ="GALAXY_SINGULARITY_SUDO">{{ galaxy_singularity_sudo | string }}</param>
             <!-- The empty volumes from shouldn't affect Galaxy, set GALAXY_SINGULARITY_VOLUMES_FROM to use. -->
             <param id="singularity_volumes_from" from_environ="GALAXY_SINGULARITY_VOLUMES_FROM">{{ galaxy_singularity_volumes_from }}</param>

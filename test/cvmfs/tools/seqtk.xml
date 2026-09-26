@@ -1,0 +1,30 @@
+<tool id="cvmfs_seqtk_smoke" name="CVMFS seqtk smoke" version="1.0.0" profile="23.0">
+    <description>execute a cached BioContainer through the appliance</description>
+    <requirements>
+        <requirement type="package" version="1.4">seqtk</requirement>
+    </requirements>
+    <command detect_errors="exit_code"><![CDATA[
+env | sed -n 's/^SINGULARITY_CONTAINER=//p' > '$runtime' &&
+test -s '$runtime' &&
+seqtk seq -U '$input' > '$output'
+    ]]></command>
+    <inputs>
+        <param name="input" type="data" format="fasta" label="Input FASTA" />
+    </inputs>
+    <outputs>
+        <data name="output" format="fasta" label="Uppercase FASTA" />
+        <data name="runtime" format="txt" label="CVMFS container image" />
+    </outputs>
+    <tests>
+        <test>
+            <param name="input" value="lowercase.fasta" />
+            <output name="output" file="uppercase.fasta" />
+            <output name="runtime">
+                <assert_contents>
+                    <has_line_matching expression="^/cvmfs/singularity\.galaxyproject\.org/all/seqtk:1\.4--[^\s]+$" />
+                </assert_contents>
+            </output>
+        </test>
+    </tests>
+    <help>This CI fixture requires a CVMFS-backed Singularity container and checks seqtk output.</help>
+</tool>

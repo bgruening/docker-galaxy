@@ -456,6 +456,7 @@ ADD startup.sh /usr/bin/startup
 ADD startup2.sh /usr/bin/startup2
 COPY --chmod=0755 cvmfs-entrypoint.sh /usr/bin/cvmfs-entrypoint
 COPY --chmod=0644 cvmfs-functions.sh /usr/lib/docker-galaxy/cvmfs-functions.sh
+COPY --chmod=0644 container-functions.sh /usr/lib/docker-galaxy/container-functions.sh
 ENV SUPERVISOR_POSTGRES_AUTOSTART=False \
     SUPERVISOR_MANAGE_POSTGRES=True \
     SUPERVISOR_MANAGE_CRON=True \

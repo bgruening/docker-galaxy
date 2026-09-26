@@ -1,0 +1,4 @@
+# No registry pulls, explicit images, or local image caches: a successful job
+# must resolve its package requirement from the mounted CVMFS repository.
+- type: cached_mulled_singularity
+  cache_directory: /cvmfs/singularity.galaxyproject.org/all
