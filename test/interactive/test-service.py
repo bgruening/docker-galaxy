@@ -72,6 +72,9 @@ def main():
         def service_reachable():
             try:
                 response = public.get(proxy_url, headers={"Host": host_header}, timeout=5, allow_redirects=False)
+                report["last_service_response"] = {
+                    "status_code": response.status_code, "body": response.text[:1000],
+                }
                 return response.status_code == 200 and response.text == "galaxy-appliance-it-ok\n"
             except requests.RequestException:
                 return False
@@ -94,6 +97,11 @@ def main():
     except Exception as exc:
         report["status"] = "error"
         report["error"] = str(exc)
+        if job_id:
+            try:
+                report["job_console_output"] = call("GET", f"jobs/{job_id}/console_output")
+            except requests.RequestException as diagnostic_error:
+                report["diagnostic_error"] = str(diagnostic_error)
         raise
     finally:
         try:
