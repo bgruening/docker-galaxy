@@ -97,6 +97,24 @@ docker run -i -t -p 8080:80 \
 
 and run the `startup` script by yourself, to start PostgreSQL, nginx and Galaxy.
 
+### Startup implementation and release target
+
+The image targets Galaxy `dev` ahead of 26.2. `/usr/bin/startup` now uses
+`galaxy/startup2.sh`, including its service waits and startup diagnostics.
+`/usr/bin/startup2` remains an alias for that same implementation. CI exercises the
+new default through normal container launches, including privileged startup,
+userspace CVMFS, tool execution, Interactive Tools, and ARM64 smoke checks.
+
+The previous script remains available temporarily as `/usr/bin/startup-legacy`:
+
+```sh
+docker run --privileged galaxy:test /usr/bin/startup-legacy
+```
+
+This fallback is deprecated and scheduled for removal in 27.0. These changes target
+26.2 development and are not intended as a 26.1 backport. `GALAXY_RELEASE` remains a
+build argument for selecting another Galaxy source ref explicitly.
+
 Docker images are "read-only", all your changes inside one session will be lost after restart. This mode is useful to present Galaxy to your colleagues or to run workshops with it. To install Tool Shed repositories or to save your data you need to export the calculated data to the host computer.
 
 Fortunately, this is as easy as:
@@ -628,26 +646,22 @@ Set `CVMFS_MODE` to select the runtime behavior:
 | `auto` | Uses an existing external mount, preserves the privileged native path, or selects userspace CVMFS when its prerequisites are available. |
 | `userspace` | Requires the FUSE/security options above and fails with an actionable error if they are missing. |
 | `system` | Uses the image's native privileged/autofs setup. |
-| `external` | Waits for repositories mounted by the Compose sidecar or host. |
+| `external` | Waits for repositories mounted externally and supplied to the container. |
 | `disabled` | Starts Galaxy without CVMFS reference data. |
 
 The default repositories are `data.galaxyproject.org` and `singularity.galaxyproject.org`. Override them
 with comma-separated `CVMFS_REPOSITORIES`. `CVMFS_CACHE_BASE`, `CVMFS_QUOTA_LIMIT`, and
 `CVMFS_EXTERNAL_WAIT` configure the cache path, cache quota in MB, and external-mount wait in seconds.
 
-### Privileged and sidecar compatibility modes
+### Privileged compatibility mode
 
-Launching with `--privileged` keeps the existing native CVMFS/autofs behavior. Where FUSE cannot be
-exposed to the Galaxy container, the optional sidecar in `galaxy/docker-compose.yaml` remains available:
+Launching with `--privileged` keeps the native CVMFS/autofs behavior. The supported
+appliance mounts CVMFS within its single Galaxy container; the bundled CVMFS sidecar
+and Compose profile have been removed. `galaxy/docker-compose.yaml` starts only
+Galaxy and does not require a host `/cvmfs` directory or shared mount propagation.
 
-```sh
-cd galaxy
-CVMFS_MODE=external CVMFS_MOUNT_DIR=/cvmfs EXPORT_DIR=./export docker compose --profile cvmfs up
-```
-
-This starts a dedicated CVMFS container that mounts the repositories and shares `/cvmfs` with the Galaxy
-container. The CVMFS cache is persisted in `${EXPORT_DIR}/cvmfs-cache`. The optional dependency used by
-this profile requires Docker Compose 2.20.2 or newer.
+Advanced deployments can still supply externally mounted repositories with
+`CVMFS_MODE=external`, but must configure their own mounts.
 
 
 ## Personalize your Galaxy <a name="Personalize-your-Galaxy" /> [[toc]](#toc)
@@ -1025,15 +1039,15 @@ The project includes local test scripts and CI workflows. Use the matrix below t
 | Area | Script / Workflow | Requires | Notes |
 | --- | --- | --- | --- |
 | Image build | `docker build -t galaxy:test galaxy/` | Docker | Baseline image build. |
-| Startup sanity | `docker run --rm --privileged galaxy:test /usr/bin/startup2` | Privileged | Confirms services start and CVMFS messaging is sane. |
+| Startup sanity | `test/smoke.sh` | Privileged | Boots the image's default startup implementation and checks Galaxy readiness. |
 | Bioblend | `test/bioblend/test.sh` | Running Galaxy container | Uses a Bioblend test image against Galaxy. |
 | Slurm | `test/slurm/test.sh` | Docker, Slurm test image | Uses external Slurm container; set `GALAXY_IMAGE=galaxy:test` if needed. |
 | SGE (Grid Engine) | `test/gridengine/test.sh` | Docker, SGE test image | Uses ephemeris container to wait for Galaxy. |
 | CVMFS userspace | `test/cvmfs/test-userspace.sh` | `/dev/fuse` and documented security options | Boots Galaxy and verifies a CVMFS-backed tool-data table through the API. |
 | CVMFS tool execution | `GALAXY_SMOKE_CVMFS_TOOL_TEST=true test/cvmfs/test-userspace.sh` | amd64 Linux, userspace CVMFS options, Planemo 0.75.47 | Executes seqtk through Slurm/Singularity using a CVMFS image; verifies output, container image name, and CVMFS source path in job metrics. |
-| CVMFS sidecar | `test/cvmfs/test.sh` | Privileged sidecar | Validates sidecar mount propagation into a consumer container. |
 | FTP/SFTP | `.github/workflows/single.sh` | Docker, sshpass (CI) | FTP and SFTP checks run in CI; local run skips SFTP if `sshpass` is missing. |
-| /export persistence | `startup.sh` / `startup2.sh` | `/export` volume | Export and cache relocation happens during startup; exercised by CI runs. |
+| /export persistence | `.github/workflows/single.sh` | `/export` volume | Exercises export relocation and restart persistence through the default startup implementation. |
+| Interactive Tool service | `bash test/interactive/test-interactive.sh` | amd64 Linux, privileged Docker, Planemo environment | Launches an HTTP IT, checks nginx proxy access, and verifies stop/cleanup. |
 | HTTPS/TLS | `.github/workflows/single.sh` | Docker | Uses `curl` and `openssl s_client` against port 443. |
 | Tool install smoke | `.github/workflows/single.sh` | Docker | Installs sample tools and verifies tool availability. |
 | Container resolvers | `test/container_resolvers_conf.ci.yml` | Galaxy container | CI uses a minimal resolver config for toolbox resolution tests. |
@@ -1043,7 +1057,6 @@ The project includes local test scripts and CI workflows. Use the matrix below t
 
 Notes:
 - If `/tmp` is small in CI, set `TMPDIR=/var/tmp` for test scripts.
-- CVMFS sidecar CI tests pull requests that change sidecar paths and builds/pushes from `main` and tags.
 
 
 

@@ -3,6 +3,10 @@
 This reference captures the key decisions, pins, and fixes applied during the 25.1 upgrade.
 Use it as a **lessons-learned checklist** and re-validate each item for the next release.
 
+Historical note: the bundled CVMFS sidecar, its Compose profile, and its dedicated
+test/workflow were removed during development for 26.2. The current image supports
+userspace CVMFS and defaults to `startup2.sh`; consult the README for current commands.
+
 ## Base versions and build decisions
 
 - **Ubuntu base**: `ubuntu:24.04` in `galaxy/Dockerfile` (`galaxy_cluster_base` stage).

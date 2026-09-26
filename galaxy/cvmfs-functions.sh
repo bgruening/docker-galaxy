@@ -119,7 +119,7 @@ cvmfs_prepare_mounts() {
             ;;
         system)
             if ! command -v mount.cvmfs >/dev/null 2>&1; then
-                echo "Info: CVMFS client not available; install CVMFS or use the sidecar via docker-compose --profile cvmfs."
+                echo "Info: CVMFS client not available; use an appliance image with the CVMFS client installed."
             elif [[ "$system_strategy" == autofs && "$autofs_configured" == true ]]; then
                 echo "CVMFS autofs is configured; repositories will mount on first access."
             else

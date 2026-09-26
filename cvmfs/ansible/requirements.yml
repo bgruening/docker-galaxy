@@ -1,5 +1,0 @@
----
-roles:
-  - name: galaxyproject.cvmfs
-    src: https://github.com/galaxyproject/ansible-cvmfs
-    version: main

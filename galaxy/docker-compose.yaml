@@ -15,10 +15,6 @@ services:
       - CVMFS_MODE=${CVMFS_MODE:-auto}
     hostname: galaxy-server
     privileged: True
-    depends_on:
-      cvmfs:
-        condition: service_healthy
-        required: false
     ports:
       - "8080:80"
       - "9002:9002"
@@ -31,35 +27,3 @@ services:
       - ${EXPORT_DIR:-./export}/:/export/:delegated
       - ${EXPORT_DIR:-./export}/tus_upload_store:/tus_upload_store:delegated
       - /var/run/docker.sock:/var/run/docker.sock
-      # Optional CVMFS mount (shared with the sidecar when enabled).
-      - type: bind
-        source: ${CVMFS_MOUNT_DIR:-/cvmfs}
-        target: /cvmfs
-        bind:
-          # Propagate CVMFS mounts from the sidecar into this container.
-          propagation: rshared
-
-  cvmfs:
-    profiles:
-      - cvmfs
-    build: ../cvmfs
-    image: galaxy-cvmfs:latest
-    privileged: true
-    environment:
-      - CVMFS_REPOSITORIES=data.galaxyproject.org,singularity.galaxyproject.org
-      - CVMFS_CACHE_BASE=/var/lib/cvmfs
-    healthcheck:
-      test:
-        - CMD-SHELL
-        - for repo in $$(printf '%s' "$$CVMFS_REPOSITORIES" | tr ',' ' '); do mountpoint -q "/cvmfs/$$repo" && ls "/cvmfs/$$repo" >/dev/null || exit 1; done
-      interval: 2s
-      timeout: 2s
-      retries: 60
-    volumes:
-      - type: bind
-        source: ${CVMFS_MOUNT_DIR:-/cvmfs}
-        target: /cvmfs
-        bind:
-          # Allow mounts created here to propagate to the host and Galaxy container.
-          propagation: rshared
-      - ${EXPORT_DIR:-./export}/cvmfs-cache:/var/lib/cvmfs:delegated
